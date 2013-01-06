@@ -45,6 +45,35 @@ This typically leads to syslog entries like this:
 
     temper-python: Exception while updating data: could not release intf 1: Invalid argument
 
+## USB device permissions
+
+At least on Debian Wheezy, the default USB device node has permissions to only allow
+access for root. In the same case, `snmpd` is running as the user `snmpd`. Bam. No access.
+You might find a corresponding note in syslog.
+
+To solve that, the file `99-tempsensor.rules` is a udev rule that allows access to the
+specific USB devices (with matching VID/PID) by anyone. Install like this:
+
+    sudo cp udev/99-tempsensor.rules /etc/udev/rules.d/
+
+To check for success, find the bus and device IDs of the devices like this:
+
+    pi@raspi-temper1 ~ $ lsusb | grep "0c45:7401"
+    Bus 001 Device 004: ID 0c45:7401 Microdia 
+    Bus 001 Device 005: ID 0c45:7401 Microdia 
+
+    pi@raspi-temper1 ~ $ ls -l /dev/usb*
+    crw------- 1 root root 189, 0 Jan  1  1970 /dev/usbdev1.1
+    crw------- 1 root root 189, 1 Jan  1  1970 /dev/usbdev1.2
+    crw------- 1 root root 189, 2 Jan  1  1970 /dev/usbdev1.3
+    crw-rw-rwT 1 root root 189, 3 Jan  1  1970 /dev/usbdev1.4
+    crw-rw-rwT 1 root root 189, 4 Jan  1  1970 /dev/usbdev1.5
+    pi@raspi-temper1 ~ $ 
+
+Note that `/dev/usbdev1.4` and `/dev/usbdev1.5` have permissions for read/write
+for anyone, including `snmp`. This will work for the passpersist-module running
+along with `snmpd`.
+
 ## What to add to snmpd.conf
 
 To emulate an APC Battery/Internal temperature value, add something like this to snmpd.conf.
