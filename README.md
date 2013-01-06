@@ -139,6 +139,24 @@ Try running it manually and mimik a passpersist-request (`->` means you should e
 
 If you have a problem with the USB side and want to test SNMP, run the script with `--testmode`.
 
+# Note on multiple device usage
+
+The devices I have seen do not have any way to identify them. The serial number is 0.
+There is no way (and this driver does not make any attempt) to present a persistent
+ordering among the USB devices. The effective order is the one that `libusb` presents.
+That seems to be based on the enumeration order of the devices.
+
+That in turn [seems to be](http://osr507doc.sco.com/en/man/html.HW/usb.HW.html#USBdevID)
+based primarily on the physical ordering in the root hub -> hub port hierarchy on bootup.
+But if you unplug and replug the device (or it gets detached due to a glitch and is
+redetected) then the order of the devices may be changed.
+
+If that happens, your temperature readings will change and you cannot say which device
+belongs to what OID if you are using SNMP.
+
+Long story short: Only use the device order if the USB bus is stable and you reboot after
+any plugging on the device. Even then, you are not safe. Sorry.
+
 # Origins
 
 The USB interaction pattern is extracted from [here](http://www.isp-sl.com/pcsensor-1.0.0.tgz)
