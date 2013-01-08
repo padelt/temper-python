@@ -13,6 +13,8 @@ import syslog
 import snmp_passpersist as snmp
 from temper import TemperHandler, TemperDevice
 
+ERROR_TEMPERATURE = 9999
+
 class LogWriter():
     def __init__(self, ident='temper-python', facility=syslog.LOG_DAEMON):
         syslog.openlog(ident, 0, facility)
@@ -47,6 +49,10 @@ class Updater():
                     pp.add_int('9.9.13.1.3.1.3.%i' % (i+1), int(dev.get_temperature()))
             except Exception, e:
                 self.logger.write_log('Exception while updating data: %s' % str(e))
+                # Report an exceptionally large temperature to set off all alarms.
+                # snmp_passpersist does not expose an API to remove an OID.
+                for oid in ('318.1.1.1.2.2.2.0', '9.9.13.1.3.1.3.1', '9.9.13.1.3.1.3.2', '9.9.13.1.3.1.3.3'):
+                    pp.add_int(oid, ERROR_TEMPERATURE)
 
 if __name__ == '__main__':
     pp = snmp.PassPersist(".1.3.6.1.4.1")
