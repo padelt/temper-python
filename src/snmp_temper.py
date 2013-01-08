@@ -26,6 +26,9 @@ class Updater():
         self.logger = logger
         self.pp = pp
         self.testmode = testmode
+        self._initialize()
+
+    def _initialize(self):
         try:
             self.th = TemperHandler()
             self.devs = self.th.get_devices()
@@ -34,6 +37,17 @@ class Updater():
                 self.logger.write_log('Initial temperature of device #%i: %0.1f degree celsius' % (i, d.get_temperature()))
         except Exception, e:
             self.logger.write_log('Exception while initializing: %s' % str(e))
+
+    def _reinitialize(self):
+        # Tries to close all known devices and starts over.
+        self.logger.write_log('Reinitializing devices')
+        for i,d in enumerate(self.devs):
+            try:
+                d.close()
+            except Exception, e:
+                self.logger.write_log('Exception closing device #%i: %s' % (i, str(e))) 
+        self._initialize()
+
     def update(self):
         if self.testmode:
             # APC Internal/Battery Temperature
@@ -53,6 +67,8 @@ class Updater():
                 # snmp_passpersist does not expose an API to remove an OID.
                 for oid in ('318.1.1.1.2.2.2.0', '9.9.13.1.3.1.3.1', '9.9.13.1.3.1.3.2', '9.9.13.1.3.1.3.3'):
                     pp.add_int(oid, ERROR_TEMPERATURE)
+                self.logger.write_log('Starting reinitialize after error on update')
+                self._reinitialize()
 
 if __name__ == '__main__':
     pp = snmp.PassPersist(".1.3.6.1.4.1")
