@@ -58,7 +58,7 @@ class Updater():
             pp.add_int('9.9.13.1.3.1.3.3', 99)
         else:
             try:
-                pp.add_int('318.1.1.1.2.2.2.0', max([d.get_temperature() for d in self.devs]))
+                pp.add_int('318.1.1.1.2.2.2.0', int(max([d.get_temperature() for d in self.devs])))
                 for i, dev in enumerate(self.devs[:3]): # use max. first 3 devices
                     pp.add_int('9.9.13.1.3.1.3.%i' % (i+1), int(dev.get_temperature()))
             except Exception, e:
