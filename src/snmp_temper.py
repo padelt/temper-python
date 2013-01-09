@@ -10,6 +10,7 @@
 
 import sys
 import syslog
+import threading
 import snmp_passpersist as snmp
 from temper import TemperHandler, TemperDevice
 
@@ -26,26 +27,29 @@ class Updater():
         self.logger = logger
         self.pp = pp
         self.testmode = testmode
+        self.usb_lock = threading.Lock() # used to stop reinitialization interfering with update-thread
         self._initialize()
 
     def _initialize(self):
-        try:
-            self.th = TemperHandler()
-            self.devs = self.th.get_devices()
-            self.logger.write_log('Found %i thermometer devices.' % len(self.devs))
-            for i, d in enumerate(self.devs):
-                self.logger.write_log('Initial temperature of device #%i: %0.1f degree celsius' % (i, d.get_temperature()))
-        except Exception, e:
-            self.logger.write_log('Exception while initializing: %s' % str(e))
+        with self.usb_lock:
+            try:
+                self.th = TemperHandler()
+                self.devs = self.th.get_devices()
+                self.logger.write_log('Found %i thermometer devices.' % len(self.devs))
+                for i, d in enumerate(self.devs):
+                    self.logger.write_log('Initial temperature of device #%i: %0.1f degree celsius' % (i, d.get_temperature()))
+            except Exception, e:
+                self.logger.write_log('Exception while initializing: %s' % str(e))
 
     def _reinitialize(self):
         # Tries to close all known devices and starts over.
         self.logger.write_log('Reinitializing devices')
-        for i,d in enumerate(self.devs):
-            try:
-                d.close()
-            except Exception, e:
-                self.logger.write_log('Exception closing device #%i: %s' % (i, str(e))) 
+        with self.usb_lock:
+            for i,d in enumerate(self.devs):
+                try:
+                    d.close()
+                except Exception, e:
+                    self.logger.write_log('Exception closing device #%i: %s' % (i, str(e))) 
         self._initialize()
 
     def update(self):
@@ -58,9 +62,10 @@ class Updater():
             pp.add_int('9.9.13.1.3.1.3.3', 99)
         else:
             try:
-                pp.add_int('318.1.1.1.2.2.2.0', int(max([d.get_temperature() for d in self.devs])))
-                for i, dev in enumerate(self.devs[:3]): # use max. first 3 devices
-                    pp.add_int('9.9.13.1.3.1.3.%i' % (i+1), int(dev.get_temperature()))
+                with self.usb_lock:
+                    pp.add_int('318.1.1.1.2.2.2.0', int(max([d.get_temperature() for d in self.devs])))
+                    for i, dev in enumerate(self.devs[:3]): # use max. first 3 devices
+                        pp.add_int('9.9.13.1.3.1.3.%i' % (i+1), int(dev.get_temperature()))
             except Exception, e:
                 self.logger.write_log('Exception while updating data: %s' % str(e))
                 # Report an exceptionally large temperature to set off all alarms.
