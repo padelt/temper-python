@@ -9,6 +9,7 @@
 
 import usb
 import sys
+import struct
 
 VIDPIDs = [(0x0c45L,0x7401L)]
 REQ_INT_LEN = 8
@@ -46,7 +47,8 @@ class TemperDevice():
             self._interrupt_read(self._handle)
             self._control_transfer(self._handle, "\x01\x80\x33\x01\x00\x00\x00\x00") # uTemperatura
             data = self._interrupt_read(self._handle)
-            temp_c = 125.0/32000.0*((data[3] & 0xFF) + (data[2] << 8));
+            data_s = "".join([chr(byte) for byte in data])
+            temp_c = 125.0/32000.0*(struct.unpack('>h', data_s[2:4])[0])
             if format == 'celsius':
                 return temp_c
             elif format == 'fahrenheit':
