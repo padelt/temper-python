@@ -1,4 +1,3 @@
-#!/usr/bin/python -u
 # encoding: utf-8
 #
 # Run snmp_temper.py as a pass-persist module for NetSNMP.
@@ -8,6 +7,7 @@
 #
 # This code is licensed under the GNU public license (GPL). See LICENSE.md for details.
 
+import os
 import sys
 import syslog
 import threading
@@ -15,6 +15,11 @@ import snmp_passpersist as snmp
 from temper import TemperHandler, TemperDevice
 
 ERROR_TEMPERATURE = 9999
+
+
+def _unbuffered_handle(fd):
+    return os.fdopen(fd, 'w', 0)
+
 
 class LogWriter():
     def __init__(self, ident='temper-python', facility=syslog.LOG_DAEMON):
@@ -75,8 +80,14 @@ class Updater():
                 self.logger.write_log('Starting reinitialize after error on update')
                 self._reinitialize()
 
-if __name__ == '__main__':
+
+def main():
+    sys.stdout = _unbuffered_handle(sys.stdout)
     pp = snmp.PassPersist(".1.3.6.1.4.1")
     logger = LogWriter()
     upd = Updater(pp, logger, testmode=('--testmode' in sys.argv))
     pp.start(upd.update, 5) # update every 5s
+
+
+if __name__ == '__main__':
+    main()
