@@ -99,14 +99,14 @@ def main():
        log.debug("Found %i devices" % len(devs))
 
        data = ""
-       for dev,ds in enumerate(mapping):
+       for dev,ds in mapping.items():
           devnum = int(dev)
           if devnum>(len(devs)-1) or not devs[devnum]:
              log.error("Device #%i not found!" % devnum)
           else:
              temp = devs[devnum].get_temperature(cfg["units"])
              print "Device #%i: %0.1f" % (devnum, temp)
-             data = data + string.join([ds,str(temp)],",")+"\r\n"
+             data = data + string.join([str(ds),str(temp)],",")+"\r\n"
     except Exception, ex:
         log.error("Error reading data from temper: %s" % ex )
         sys.exit(100)
