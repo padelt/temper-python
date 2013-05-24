@@ -1,33 +1,16 @@
 #!/usr/bin/env python2.7
 """
-This script will read nest thermostat values and will post to COSM.com
+This script will read temperature values and will post to COSM.com
 
 It is using cosm.cfg which is JSON dictionary with following fields:
 
 {
    "key":"your key"
    "feed":123,
-    "nest_user":"user@example.com",
-    "nest_password":"secret",
-    "units":"C",
-    "fields": {
-        "current_temperature":{"datastream":1},
-        "current_humidity":{"datastream":2},
-        "fan_mode":{"datastream":3, 
-                    "mapping":{
-                        "off":-1,
-                        "on":1,
-                        "auto":0
-                    }},
-        "hvac_ac_state": {"datastream":4,"mapping":{
-            "False":0,
-            "True":1
-        }},
-        "hvac_heater_state":{"datastream":5,"mapping":{
-            "False":0,
-            "True":1
-        }},
-        "battery_level":{"datastream":100}
+    "units":"celsius",
+    "mapping": {
+        "0":8,
+        "1",9
     }
 }
 """
@@ -38,7 +21,7 @@ import logging
 import string
 import getopt
 import cosm
-from nest import Nest
+import temper
 
 CFG_FILE="cosm.cfg"
 COSM_LOGFILE="cosm.log"
@@ -108,36 +91,26 @@ def main():
         log.error("Error reading config file %s" % ex)
         sys.exit(1)
         
-    fields = cfg["fields"]
+    mapping = cfg["mapping"]
 
     try:
-        n = Nest(cfg["nest_user"],cfg["nest_password"],units=cfg["units"])
-        n.login()
-        n.get_status()
-        shared = n.status["shared"][n.serial]
-        device = n.status["device"][n.serial]
-        allvars = shared
-        allvars.update(device)
+       th = temper.TemperHandler()
+       devs = th.get_devices()
+       log.debug("Found %i devices" % len(devs))
+
+       data = ""
+       for dev,ds in enumerate(mapping):
+          devnum = int(dev)
+          if devnum>(len(devs)-1) or not devs[devnum]:
+             log.error("Device #%i not found!" % devnum)
+          else:
+             temp = devs[devnum].get_temperature(cfg["units"])
+             print "Device #%i: %0.1f" % (devnum, temp)
+             data = data + string.join([ds,str(temp)],",")+"\r\n"
     except Exception, ex:
-        log.error("Error connecting to NEST: %s" % ex )
+        log.error("Error reading data from temper: %s" % ex )
         sys.exit(100)
 
-    data = ""
-    for fname,fds in fields.items():
-        if allvars.has_key(fname):
-            ds = str(fds["datastream"])
-            if fds.has_key("mapping"):
-                rv = str(allvars[fname])
-                if fds["mapping"].has_key(rv):
-                    v = str(fds["mapping"][rv])
-                else:
-                    log.error("Unknown value '%s' for mapped field '%s" % (rv,fname))
-                    continue
-            else:
-                v= str(allvars[fname])
-            data = data + string.join([ds,v],",")+"\r\n"
-        else:
-            log.warning("Field '%s' not found!", fname)
     try:
         if not debug_mode:
             log.info("Updating feed %s" % cfg["feed"])
