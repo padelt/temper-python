@@ -1,0 +1,2 @@
+# Sample crontab(5). Submit sensor values every 5 minutes
+*/5 * * * * temper_cosm.py -f cosm.cfg -l cosm.log
