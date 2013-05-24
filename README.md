@@ -139,6 +139,34 @@ Try running it manually and mimik a passpersist-request (`->` means you should e
 
 If you have a problem with the USB side and want to test SNMP, run the script with `--testmode`.
 
+# XIVELY.com (formerly COSM.com) submission:
+
+'temper_cosm.py' script could be used to submit thermostat data to COSM: http://cosm.com/ 
+
+Usage:
+
+        ./nest_cosm.py [-f <cfg file>] [-c] [-d]a
+
+        -c -- log to console instead of log file
+        -d -- dry-run mode. No data submitted.
+        -f <cfg file> -- config file name. Default is 'cosm.cfg'
+        -l <log file> -- config file name. Default is 'cosm.log'
+
+Configuration file example:
+
+    {
+       "key":"your key"
+       "feed":123,
+       "units":"celsius",
+       "mapping": {
+        "0":8
+    }
+    }
+     
+"mapping" specifies mapping between Temper device number (see "Note on multiple device usage" below) and datastream within feed.
+  
+Sample feed: https://xively.com/feeds/118451/ (datastream #8)
+
 # Note on multiple device usage
 
 The devices I have seen do not have any way to identify them. The serial number is 0.
