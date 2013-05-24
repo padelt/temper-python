@@ -105,7 +105,7 @@ def main():
              log.error("Device #%i not found!" % devnum)
           else:
              temp = devs[devnum].get_temperature(cfg["units"])
-             print "Device #%i: %0.1f" % (devnum, temp)
+             log.info("Device #%i: %0.1f" % (devnum, temp))
              data = data + string.join([str(ds),str(temp)],",")+"\r\n"
     except Exception, ex:
         log.error("Error reading data from temper: %s" % ex )
