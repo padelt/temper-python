@@ -152,7 +152,7 @@ Usage:
         -f <cfg file> -- config file name. Default is 'cosm.cfg'
         -l <log file> -- config file name. Default is 'cosm.log'
 
-Configuration file example:
+Configuration file example (JSON syntax):
 
     {
        "key":"your key"
@@ -161,11 +161,14 @@ Configuration file example:
        "mapping": {
         "0":8
     }
-    }
      
-"mapping" specifies mapping between Temper device number (see "Note on multiple device usage" below) and datastream within feed.
-  
+'mapping' specifies a dictionary of mappings between Temper device numbers (see "Note on multiple device usage" below) and datastreams within the feed.
+
+'units' could be one of 'celsius', 'fahrenheit', and 'millicelsius'.
+
 Sample feed: https://xively.com/feeds/118451/ (datastream #8)
+
+'temper_cosm.py' could be called from CRON(8) daemon. Sample crontab entry could be found in 'sample.crontab'.
 
 # Note on multiple device usage
 
