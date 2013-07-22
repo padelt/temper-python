@@ -13,7 +13,7 @@ Basically, `libusb` bindings for python (PyUSB) and `snmp-passpersist` from PyPI
 
 Under Debian/Ubuntu, treat yourself to some package goodness:
 
-    sudo apt-get install python-usb python-setuptools
+    sudo apt-get install python-usb python-setuptools snmpd # The latter is only necessary for SNMP-usage.
     sudo easy_install snmp-passpersist
 
 # Usage
@@ -26,6 +26,17 @@ If your udev installation does not provide access as a normal user to the
 USB device, you need to run it as root:
 
     sudo python temper/temper.py
+
+# Installation
+
+After you run
+
+    sudo python setup.py install
+
+you should end up with two scripts conveniently installed:
+
+    /usr/local/bin/temper-poll
+    /usr/local/bin/temper-snmp
 
 # Serving via SNMP
 
@@ -79,17 +90,21 @@ along with `snmpd`.
 To emulate an APC Battery/Internal temperature value, add something like this to snmpd.conf.
 The highest of all measured temperatures in degrees celcius as an integer is reported.
 
-    pass_persist    .1.3.6.1.4.1.318.1.1.1.2.2.2 /path/to/this/script/temper/snmp.py
+    pass_persist    .1.3.6.1.4.1.318.1.1.1.2.2.2 /usr/local/bin/temper-snmp
 
 Alternatively, emulate a Cisco device's temperature information with the following.
 The first three detected devices will be reported as ..13.1.3.1.3.1, ..3.2 and ..3.3 .
 The value is the temperature in degree celcius as an integer.
 
-    pass_persist    .1.3.6.1.4.1.9.9.13.1.3 /path/to/this/script/temper/snmp.py
+    pass_persist    .1.3.6.1.4.1.9.9.13.1.3 /usr/local/bin/temper-snmp
 
 Add `--testmode` to the line (as an option to `snmp.py` to enable a mode where
 APC reports 99°C and Cisco OIDs report 97, 98 and 99°C respectively. No actual devices
 need to be installed but `libusb` and its Python bindings are still required.
+
+The path `/usr/local/bin/` is correct if the installation using `python setup.py install`
+did install the scripts there. If you prefer not to install them, find and use the
+`temper/snmp.py` file.
 
 ## Troubleshooting NetSNMP-interaction
 
