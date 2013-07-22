@@ -18,7 +18,7 @@ ERROR_TEMPERATURE = 9999
 
 
 def _unbuffered_handle(fd):
-    return os.fdopen(fd, 'w', 0)
+    return os.fdopen(fd.fileno(), 'w', 0)
 
 
 class LogWriter():
@@ -60,23 +60,23 @@ class Updater():
     def update(self):
         if self.testmode:
             # APC Internal/Battery Temperature
-            pp.add_int('318.1.1.1.2.2.2.0', 99)
+            self.pp.add_int('318.1.1.1.2.2.2.0', 99)
             # Cisco devices temperature OIDs
-            pp.add_int('9.9.13.1.3.1.3.1', 97)
-            pp.add_int('9.9.13.1.3.1.3.2', 98)
-            pp.add_int('9.9.13.1.3.1.3.3', 99)
+            self.pp.add_int('9.9.13.1.3.1.3.1', 97)
+            self.pp.add_int('9.9.13.1.3.1.3.2', 98)
+            self.pp.add_int('9.9.13.1.3.1.3.3', 99)
         else:
             try:
                 with self.usb_lock:
-                    pp.add_int('318.1.1.1.2.2.2.0', int(max([d.get_temperature() for d in self.devs])))
+                    self.pp.add_int('318.1.1.1.2.2.2.0', int(max([d.get_temperature() for d in self.devs])))
                     for i, dev in enumerate(self.devs[:3]): # use max. first 3 devices
-                        pp.add_int('9.9.13.1.3.1.3.%i' % (i+1), int(dev.get_temperature()))
+                        self.pp.add_int('9.9.13.1.3.1.3.%i' % (i+1), int(dev.get_temperature()))
             except Exception, e:
                 self.logger.write_log('Exception while updating data: %s' % str(e))
                 # Report an exceptionally large temperature to set off all alarms.
                 # snmp_passpersist does not expose an API to remove an OID.
                 for oid in ('318.1.1.1.2.2.2.0', '9.9.13.1.3.1.3.1', '9.9.13.1.3.1.3.2', '9.9.13.1.3.1.3.3'):
-                    pp.add_int(oid, ERROR_TEMPERATURE)
+                    self.pp.add_int(oid, ERROR_TEMPERATURE)
                 self.logger.write_log('Starting reinitialize after error on update')
                 self._reinitialize()
 
