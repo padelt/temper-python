@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # encoding: utf-8
 #
 # Handles devices reporting themselves as USB VID/PID 0C45:7401 (mine also says RDing TEMPerV1.2).
@@ -88,10 +87,3 @@ class TemperHandler():
 
     def get_devices(self):
         return self._devices
-
-if __name__ == '__main__':
-    th = TemperHandler()
-    devs = th.get_devices()
-    print "Found %i devices" % len(devs)
-    for i, dev in enumerate(devs):
-        print "Device #%i: %0.1f°C %0.1f°F" % (i, dev.get_temperature(), dev.get_temperature(format="fahrenheit"))

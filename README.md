@@ -20,16 +20,16 @@ Under Debian/Ubuntu, treat yourself to some package goodness:
 
 To print temperatures of all sensors found in the system, just run
 
-    python src/temper.py
+    python temper/temper.py
 
 If your udev installation does not provide access as a normal user to the
 USB device, you need to run it as root:
 
-    sudo python src/temper.py
+    sudo python temper/temper.py
 
 # Serving via SNMP
 
-Using [NetSNMP](http://www.net-snmp.org/), you can use `src/snmp_temper.py`
+Using [NetSNMP](http://www.net-snmp.org/), you can use `temper/snmp.py`
 as a `pass_persist` module.
 You can choose one of two OIDs to be emulated: [APC's typical](http://www.oidview.com/mibs/318/PowerNet-MIB.html)
 internal/battery temperature (.1.3.6.1.4.1.318.1.1.1.2.2.2.0) or
@@ -54,7 +54,7 @@ You might find a corresponding note in syslog.
 To solve that, the file `99-tempsensor.rules` is a udev rule that allows access to the
 specific USB devices (with matching VID/PID) by anyone. Install like this:
 
-    sudo cp udev/99-tempsensor.rules /etc/udev/rules.d/
+    sudo cp etc/99-tempsensor.rules /etc/udev/rules.d/
 
 To check for success, find the bus and device IDs of the devices like this:
 
@@ -79,15 +79,15 @@ along with `snmpd`.
 To emulate an APC Battery/Internal temperature value, add something like this to snmpd.conf.
 The highest of all measured temperatures in degrees celcius as an integer is reported.
 
-    pass_persist    .1.3.6.1.4.1.318.1.1.1.2.2.2 /path/to/this/script/snmp_temper.py
+    pass_persist    .1.3.6.1.4.1.318.1.1.1.2.2.2 /path/to/this/script/temper/snmp.py
 
 Alternatively, emulate a Cisco device's temperature information with the following.
 The first three detected devices will be reported as ..13.1.3.1.3.1, ..3.2 and ..3.3 .
 The value is the temperature in degree celcius as an integer.
 
-    pass_persist    .1.3.6.1.4.1.9.9.13.1.3 /path/to/this/script/snmp_temper.py
+    pass_persist    .1.3.6.1.4.1.9.9.13.1.3 /path/to/this/script/temper/snmp.py
 
-Add `--testmode` to the line (as an option to `snmp_temper.py` to enable a mode where
+Add `--testmode` to the line (as an option to `snmp.py` to enable a mode where
 APC reports 99°C and Cisco OIDs report 97, 98 and 99°C respectively. No actual devices
 need to be installed but `libusb` and its Python bindings are still required.
 
@@ -96,7 +96,7 @@ need to be installed but `libusb` and its Python bindings are still required.
 The error reporting of NetSNMP is underwhelming to say the least.
 Expect every error to fail silently without a chance to find the source.
 
-`snmp_temper.py` reports some simple information to syslog with an ident string
+`snmp.py` reports some simple information to syslog with an ident string
 of `temper-python` and a facility of `LOG_DAEMON`. So this should give you the available debug information:
 
     sudo tail -f /var/log/syslog | grep temper-python
@@ -106,7 +106,7 @@ Try stopping the snmpd daemon and starting it with logging to the console:
     sudo service snmpd stop
     sudo snmpd -f
 
-It will _not_ start the passpersist-process for `snmp_temper.py` immediately
+It will _not_ start the passpersist-process for `snmp.py` immediately
 but on the first request for the activated OIDs. This also means that the
 first `snmpget` you try may fail like this:
 
@@ -128,7 +128,7 @@ When NetSNMP starts the instance (upon first `snmpget`), you should see somethin
 If you don't even see this, maybe the script has a problem and quits with an exception.
 Try running it manually and mimik a passpersist-request (`->` means you should enter the rest of the line):
 
-    -> sudo src/snmp_temper.py 
+    -> sudo temper/snmp.py 
     -> PING
     <- PONG
     -> get
@@ -161,3 +161,8 @@ any plugging on the device. Even then, you are not safe. Sorry.
 
 The USB interaction pattern is extracted from [here](http://www.isp-sl.com/pcsensor-1.0.0.tgz)
 as seen on [Google+](https://plus.google.com/105569853186899442987/posts/N9T7xAjEtyF).
+
+# Authors
+
+* Original rewrite by Philipp Adelt <autosort-github@philipp.adelt.net>
+* Additional work by Brian Cline
