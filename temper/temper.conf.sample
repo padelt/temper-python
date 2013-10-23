@@ -1,0 +1,10 @@
+# adjust values and copy this file as /etc/tempr.conf
+# any lines that does not match regular expression 
+# 'Device\s*(\d+)\s*:\s*scale\s*=\s*([+|-]?\d*\.\d+)\s*,\s*offset\s*=\s*([+|-]?\d*\.\d+)'
+# will be simply ignored.
+# device number is integer, you don't have to specify them for all of your TEMPer device. Only those devices with matching device number in this file will be affected by calibration.
+# scale and offset values are fixed format floating numbers.
+# with possible leading +/- sign. You cannot omit the decimal point.
+# dropping preceeding 0 is ok, so .3 is equivalent to 0.3.
+
+Device 0: scale = 0.937, offset = -0.5625
