@@ -180,7 +180,7 @@ Format of calibration parameters in /etc/temper.conf are:
 n-m(.m)* : scale = a, offset = b
 
 where n is the USB bus number and m is (possibly chain of) the USB port(s) 
-which your TEMper device is plugged on. a and be are some floating values decided by experiment, we will come back to this later, first let me describe how n and m can be decided for your device.
+which your TEMPer device is plugged on. a and be are some floating values decided by experiment, we will come back to this later, first let me describe how n and m can be decided for your device.
 
 You will need to use lsusb command in usbutils package to decide n and m. Use lsusb with and without -t option.
 
@@ -215,8 +215,8 @@ y = a * x + b
 
 where
 
-y: calibrated temperature (in celcius),
-x: raw temperature read from your TEMPer device (in celcius).
+y: calibrated temperature (in Celsius),
+x: raw temperature read from your TEMPer device (in Celsius).
 
 You will need to find appropriate values for a and b for your TEMPer device by doing some experiment. (Either comparing it with another thermometer which you can rely on or measuring two temperatures which you already know ... like iced water and boiling water, but make sure in the latter case that you seal your TEMPer device firmly in a plastic bag or something, since it is NOT waterproof!)
 
