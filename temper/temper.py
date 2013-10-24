@@ -16,7 +16,7 @@ VIDPIDs = [(0x0c45L,0x7401L)]
 REQ_INT_LEN = 8
 REQ_BULK_LEN = 8
 TIMEOUT = 2000
-USB_PORTS_STR = '^\s*(\d+)-(\d+(\.\d+)*)'
+USB_PORTS_STR = '^\s*(\d+)-(\d+(?:\.\d+)*)'
 CALIB_LINE_STR = USB_PORTS_STR +\
     '\s*:\s*scale\s*=\s*([+|-]?\d*\.\d+)\s*,\s*offset\s*=\s*([+|-]?\d*\.\d+)'
 
@@ -24,20 +24,31 @@ USB_SYS_PREFIX='/sys/bus/usb/devices/'
 
 def readattr(path, name):
     """Read attribute from sysfs and return as string"""
-    f = open(USB_SYS_PREFIX + path + "/" + name);
-    return f.readline().rstrip("\n");
+    try:
+        f = open(USB_SYS_PREFIX + path + "/" + name);
+        return f.readline().rstrip("\n");
+    except IOError:
+	return None
 
 def find_ports(bus_id, dev_id):
     """look into sysfs and find a device that matches given\
     bus/device ID combination, then returns the port chain it is\
     plugged on."""
     for dirent in os.listdir(USB_SYS_PREFIX):
-        matches = re.match(USB_PORTS_STR, dirent)
+        matches = re.match(USB_PORTS_STR + '$', dirent)
         if matches:
-            busnum = int(readattr(dirent, 'busnum'))
-            devnum = int(readattr(dirent, 'devnum'))
+            bus_str = readattr(dirent, 'busnum')
+	    if bus_str:
+                busnum = int(bus_str)
+            else:
+		busnum = None
+            dev_str = readattr(dirent, 'devnum')
+	    if dev_str:
+                devnum = int(dev_str)
+	    else:
+		devnum = None
             if busnum == bus_id and devnum == dev_id:
-                return readattr(dirent, 'devpath')
+                return matches.groups()[1]
 
 class TemperDevice():
     def __init__(self, device, bus):
@@ -61,10 +72,10 @@ class TemperDevice():
             for line in lines:
                 matches = re.match(CALIB_LINE_STR, line)
                 if matches:
-                    bus = int(matches.groups[0])
-                    ports = matches.groups[1]
-                    scale = float(matches.groups[2])
-                    offset = float(matches.groups[3])
+                    bus = int(matches.groups()[0])
+                    ports = matches.groups()[1]
+                    scale = float(matches.groups()[2])
+                    offset = float(matches.groups()[3])
                     if ports == find_ports(bus_id, dev_id):
                         self._scale = scale
                         self._offset = offset
