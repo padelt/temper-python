@@ -11,9 +11,9 @@ def main():
 
     for i, dev in enumerate(devs):
         readings.append({'device': i,
-                         'temperature_c': dev.get_temperature(),
+                         'temperature_c': dev.get_temperature(id=i),
                          'temperature_f':
-                         dev.get_temperature(format="fahrenheit")
+                         dev.get_temperature(format="fahrenheit", id=i)
                          })
 
     for reading in readings:
