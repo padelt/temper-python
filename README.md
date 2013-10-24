@@ -173,13 +173,13 @@ Long story short: Only use the device order if the USB bus is stable and you reb
 any plugging on the device. Even then, you are not safe. Sorry.
 
 # Calibration parameters
-You can have parameters for each of your TEMPer device to calibrate it's value with simple linear formula. If there is not this file on your machine it's fine, calibration is just skipped. The same if the program can't find a matching line with the actual device on the system.
+You can have parameters in the configuration file /etc/temper.conf for each of your TEMPer device to calibrate it's value with simple linear formula. If there is not this file on your machine it's fine, calibration is just skipped. The same if the program can't find a matching line with the actual device on the system.
 
-Format of calibration parameters in /etc/temper.conf are:
+Format of calibration lines in /etc/temper.conf is:
 
 n-m(.m)* : scale = a, offset = b
 
-where n is the USB bus number and m is (possibly chain of) the USB port(s) 
+where n is the USB bus number and m is (possibly a chain of) the USB port(s) 
 which your TEMPer device is plugged on. a and be are some floating values decided by experiment, we will come back to this later, first let me describe how n and m can be decided for your device.
 
 You will need to use lsusb command in usbutils package to decide n and m. Use lsusb with and without -t option.
@@ -192,7 +192,7 @@ Bus 001 Device 016: ID 0c45:7401 Microdia
 Bus 001 Device 015: ID 1a40:0101 TERMINUS TECHNOLOGY INC. USB-2.0 4-Port HUB
 Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 
-$ lsusb -t 
+$ lsusb -t
 /:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=orion-ehci/1p, 480M
 /:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=orion-ehci/1p, 480M
     |__ Port 4: Dev 15, If 0, Class=hub, Driver=hub/4p, 12M
