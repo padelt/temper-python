@@ -172,6 +172,54 @@ belongs to what OID if you are using SNMP.
 Long story short: Only use the device order if the USB bus is stable and you reboot after
 any plugging on the device. Even then, you are not safe. Sorry.
 
+# Calibration parameters
+You can have parameters for each of your TEMPer device to calibrate it's value with simple linear formula. If there is not this file on your machine it's fine, calibration is just skipped. The same if the program can't find a matching line with the actual device on the system.
+
+Format of calibration parameters in /etc/temper.conf are:
+
+n-m(.m)* : scale = a, offset = b
+
+where n is the USB bus number and m is (possibly chain of) the USB port(s) 
+which your TEMper device is plugged on. a and be are some floating values decided by experiment, we will come back to this later, first let me describe how n and m can be decided for your device.
+
+You will need to use lsusb command in usbutils package to decide n and m. Use lsusb with and without -t option.
+
+For example, assume the following outputs;
+
+$ lsusb
+Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+Bus 001 Device 016: ID 0c45:7401 Microdia 
+Bus 001 Device 015: ID 1a40:0101 TERMINUS TECHNOLOGY INC. USB-2.0 4-Port HUB
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+
+$ lsusb -t 
+/:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=orion-ehci/1p, 480M
+/:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=orion-ehci/1p, 480M
+    |__ Port 4: Dev 15, If 0, Class=hub, Driver=hub/4p, 12M
+        |__ Port 3: Dev 16, If 0, Class=HID, Driver=usbhid, 1.5M
+        |__ Port 3: Dev 16, If 1, Class=HID, Driver=usbhid, 1.5M
+
+First output tells you your TEMPer device (0c45:7401 Microdia) is on the bus 1 and has (just currently, it may change time to time, even if you don't move it around) device ID = 16.
+
+Now look at the second output. looking this tree, your TEMPer device (Dev 16) on the bus 01 is connected to your pc through two ports, port 4 and port 3.
+Don't worry about two devices having the same Dev ID = 16, they both belong to a single TEMPer device (it uses two USB interfaces by default, which is normal).
+
+So in this example, n = 1 and m = 4.3; thus the config file should be like
+
+1-4.3: scale = a, offset = b
+
+with a and b replaced with the actual values which you will need to measure and 
+calculate for your own TEMPer device. These values are used in the formula
+
+y = a * x + b
+
+where
+
+y: calibrated temperature (in celcius),
+x: raw temperature read from your TEMPer device (in celcius).
+
+You will need to find appropriate values for a and b for your TEMPer device by doing some experiment. (Either comparing it with another thermometer which you can rely on or measuring two temperatures which you already know ... like iced water and boiling water, but make sure in the latter case that you seal your TEMPer device firmly in a plastic bag or something, since it is NOT waterproof!)
+
 # Origins
 
 The USB interaction pattern is extracted from [here](http://www.isp-sl.com/pcsensor-1.0.0.tgz)
