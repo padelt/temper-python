@@ -28,7 +28,7 @@ def readattr(path, name):
         f = open(USB_SYS_PREFIX + path + "/" + name);
         return f.readline().rstrip("\n");
     except IOError:
-	return None
+        return None
 
 def find_ports(bus_id, dev_id):
     """look into sysfs and find a device that matches given\
@@ -38,15 +38,15 @@ def find_ports(bus_id, dev_id):
         matches = re.match(USB_PORTS_STR + '$', dirent)
         if matches:
             bus_str = readattr(dirent, 'busnum')
-	    if bus_str:
+            if bus_str:
                 busnum = int(bus_str)
             else:
-		busnum = None
+                busnum = None
             dev_str = readattr(dirent, 'devnum')
-	    if dev_str:
+            if dev_str:
                 devnum = int(dev_str)
-	    else:
-		devnum = None
+            else:
+                devnum = None
             if busnum == bus_id and devnum == dev_id:
                 return matches.groups()[1]
 
