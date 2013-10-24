@@ -9,16 +9,74 @@
 import usb
 import sys
 import struct
+<<<<<<< with-calibration
+=======
+import os
+import re
+>>>>>>> local
 
 VIDPIDs = [(0x0c45L,0x7401L)]
 REQ_INT_LEN = 8
 REQ_BULK_LEN = 8
 TIMEOUT = 2000
+<<<<<<< with-calibration
+=======
+USB_PORTS_STR = '(\d+)-(\d+(\.\d+)*)'
+CALIB_LINE_STR = USB_PORTS_STR +\
+    '\s*:\s*scale\s*=\s*([+|-]?\d*\.\d+)\s*,\s*offset\s*=\s*([+|-]?\d*\.\d+)'
+
+USB_SYS_PREFIX='/sys/bus/usb/devices/'
+
+def readattr(path, name):
+    """Read attribute from sysfs and return as string"""
+    f = open(USB_SYS_PREFIX + path + "/" + name);
+    return f.readline().rstrip("\n");
+
+def find_ports(bus_id, dev_id):
+    """look into sysfs and find a device that matches given\
+    bus/device ID combination, then returns the port chain it is\
+    plugged on."""
+    for dirent in os.listdir(USB_SYS_PREFIX):
+        matches = re.match(USB_PORTS_STR, dirent)
+        if matches:
+            busnum = int(readattr(dirent, 'busnum'))
+            devnum = int(readattr(dirent, 'devnum'))
+            if busnum == bus_id and devnum == dev_id:
+                return readattr(dirent, 'devpath')
+>>>>>>> local
 
 class TemperDevice():
-    def __init__(self, device):
+    def __init__(self, device, bus):
         self._device = device
+        self._bus = bus
         self._handle = None
+<<<<<<< with-calibration
+=======
+        self.set_calibration_data()
+
+    def set_calibration_data(self):
+        self._scale = 1.0
+        self._offset = 0.0
+        bus_id = int(self._bus.dirname)
+        dev_id = int(self._device.filename)
+        try:
+            f = open('/etc/temper.conf', 'r')
+        except IOError:
+            f = None
+        if f:
+            lines = f.read().split('\n')
+            f.close()
+            for line in lines:
+                matches = re.match(CALIB_LINE_STR, line)
+                if matches:
+                    bus = int(matches.groups[0])
+                    ports = matches.groups[1]
+                    scale = float(matches.groups[2])
+                    offset = float(matches.groups[3])
+                    if ports == find_ports(bus_id, dev_id):
+                        self._scale = scale
+                        self._offset = offset
+>>>>>>> local
 
     def get_temperature(self, format='celsius'):
         try:
@@ -48,6 +106,10 @@ class TemperDevice():
             data = self._interrupt_read(self._handle)
             data_s = "".join([chr(byte) for byte in data])
             temp_c = 125.0/32000.0*(struct.unpack('>h', data_s[2:4])[0])
+<<<<<<< with-calibration
+=======
+            temp_c = temp_c * self._scale + self._offset
+>>>>>>> local
             if format == 'celsius':
                 return temp_c
             elif format == 'fahrenheit':
@@ -83,7 +145,7 @@ class TemperHandler():
         busses = usb.busses()
         self._devices = []
         for bus in busses:
-            self._devices.extend([TemperDevice(x) for x in bus.devices if (x.idVendor,x.idProduct) in VIDPIDs])
+            self._devices.extend([TemperDevice(x, bus) for x in bus.devices if (x.idVendor,x.idProduct) in VIDPIDs])
 
     def get_devices(self):
         return self._devices
