@@ -30,10 +30,12 @@ def readattr(path, name):
     except IOError:
         return None
 
-def find_ports(bus_id, dev_id):
+def find_ports(bus, device):
     """look into sysfs and find a device that matches given\
     bus/device ID combination, then returns the port chain it is\
     plugged on."""
+    bus_id = int(bus.dirname)
+    dev_id = int(device.filename)
     for dirent in os.listdir(USB_SYS_PREFIX):
         matches = re.match(USB_PORTS_STR + '$', dirent)
         if matches:
@@ -55,13 +57,12 @@ class TemperDevice():
         self._device = device
         self._bus = bus
         self._handle = None
+        self._ports = find_ports(bus, device)
         self.set_calibration_data()
 
     def set_calibration_data(self):
         self._scale = 1.0
         self._offset = 0.0
-        bus_id = int(self._bus.dirname)
-        dev_id = int(self._device.filename)
         try:
             f = open('/etc/temper.conf', 'r')
         except IOError:
@@ -76,9 +77,17 @@ class TemperDevice():
                     ports = matches.groups()[1]
                     scale = float(matches.groups()[2])
                     offset = float(matches.groups()[3])
-                    if ports == find_ports(bus_id, dev_id):
+                    if ports == self._ports:
                         self._scale = scale
                         self._offset = offset
+    def get_ports(self):
+        if self._ports:
+            return self._ports
+        else:
+            return ""
+
+    def get_location(self):
+        return self._bus.dirname + '-' + self.get_ports()
 
     def get_temperature(self, format='celsius'):
         try:
