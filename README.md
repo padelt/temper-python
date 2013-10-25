@@ -16,18 +16,7 @@ Under Debian/Ubuntu, treat yourself to some package goodness:
     sudo apt-get install python-usb python-setuptools snmpd # The latter is only necessary for SNMP-usage.
     sudo easy_install snmp-passpersist
 
-# Usage
-
-To print temperatures of all sensors found in the system, just run
-
-    python temper/temper.py
-
-If your udev installation does not provide access as a normal user to the
-USB device, you need to run it as root:
-
-    sudo python temper/temper.py
-
-# Installation
+# Installation and usage
 
 After you run
 
@@ -37,6 +26,8 @@ you should end up with two scripts conveniently installed:
 
     /usr/local/bin/temper-poll
     /usr/local/bin/temper-snmp
+
+If your system does not provide access as a normal user to the USB device, you need to rum them as root. See "USB device permissions" section for more on this.
 
 # Serving via SNMP
 
