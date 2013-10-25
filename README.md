@@ -163,6 +163,8 @@ belongs to what OID if you are using SNMP.
 Long story short: Only use the device order if the USB bus is stable and you reboot after
 any plugging on the device. Even then, you are not safe. Sorry.
 
+Note by GM3D: Since calibration parameters must be set per each device, we need some way to identify them physically. As mentioned above, the serial number for all TEMPer devices is zero, so there is no true way to tell which is which programatically. The USB device number does not work either since it changes every time you reboot the machine or plug/unplug the device. The way that possibly can work is identifying them by the combination of the bus number and the USB port (possibly a chain of ports, if you have hubs in between), which is what I am doing for now. This information is basically the same with what you can get with "lsusb -t" and is based on the information in the sysfs directory /sys/bus/usb/devices (See below). So far I am assuming this scheme is persistent enough for regular use cases, but even the bus number may change in some cases like - for example - if your machine is a tablet like machine and you hotplug it to a keyboard dock with a USB root hub in it. In such case you will need to re-run lsusb and adjust the bus-port numbers in the configuration file accordingly. Atm I have no clue about SNMP OID persistence.
+
 # Calibration parameters
 You can have parameters in the configuration file /etc/temper.conf for each of your TEMPer device to calibrate it's value with simple linear formula. If there is not this file on your machine it's fine, calibration is just skipped. The same if the program can't find a matching line with the actual device on the system.
 
@@ -209,7 +211,7 @@ where
 y: calibrated temperature (in Celsius),
 x: raw temperature read from your TEMPer device (in Celsius).
 
-You will need to find appropriate values for a and b for your TEMPer device by doing some experiment. (Either comparing it with another thermometer which you can rely on or measuring two temperatures which you already know ... like iced water and boiling water, but make sure in the latter case that you seal your TEMPer device firmly in a plastic bag or something, since it is NOT waterproof!)
+You will need to find appropriate values for a and b for your TEMPer device by doing some experiment and basic math. (Either comparing it with another thermometer which you can rely on or measuring two temperatures which you already know ... like iced water and boiling water, but make sure in the latter case that you seal your TEMPer device firmly in a plastic bag or something, since it is NOT waterproof!)
 
 # Origins
 
