@@ -42,7 +42,7 @@ class Updater():
                 self.devs = self.th.get_devices()
                 self.logger.write_log('Found %i thermometer devices.' % len(self.devs))
                 for i, d in enumerate(self.devs):
-                    self.logger.write_log('Initial temperature of device #%i: %0.1f degree celsius' % (i, d.get_temperature(id=i)))
+                    self.logger.write_log('Initial temperature of device #%i: %0.1f degree celsius' % (i, d.get_temperature()))
             except Exception, e:
                 self.logger.write_log('Exception while initializing: %s' % str(e))
 
