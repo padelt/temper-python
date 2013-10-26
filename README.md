@@ -29,6 +29,20 @@ you should end up with two scripts conveniently installed:
 
 If your system does not provide access as a normal user to the USB device, you need to rum them as root. See "USB device permissions" section for more on this.
 
+temper-poll accepts -p option now, which adds the USB bus and port information each device is plugged on.
+
+without -p option
+$ temper-poll
+Found 1 devices
+Device #0: 22.5°C 72.5°F
+
+with -p option
+$ temper-poll -p
+Found 1 devices
+Device #0 (bus 1 - port 1.3): 22.4°C 72.3°F
+
+Which tells you there is a a USB hub plugged (internally or externally) on the port 1 of the bus 1 of the host, and your TEMPer device  is on the port 3 of that hub.
+
 # Serving via SNMP
 
 Using [NetSNMP](http://www.net-snmp.org/), you can use `temper/snmp.py`
@@ -212,6 +226,8 @@ y: calibrated temperature (in Celsius),
 x: raw temperature read from your TEMPer device (in Celsius).
 
 You will need to find appropriate values for a and b for your TEMPer device by doing some experiment and basic math. (Either comparing it with another thermometer which you can rely on or measuring two temperatures which you already know ... like iced water and boiling water, but make sure in the latter case that you seal your TEMPer device firmly in a plastic bag or something, since it is NOT waterproof!)
+
+(To find out bus and port numbers, you can also try running temper-poll with -p option, which will contain information in the form (bus 1 - port 4.3) in the above example. This might be actually easier than looking at the lsusb outputs, as long as it works.)
 
 # Origins
 
