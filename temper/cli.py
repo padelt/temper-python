@@ -34,12 +34,12 @@ def main():
                          'temperature_f':
                          dev.get_temperature(format="fahrenheit"),
                          'ports': dev.get_ports(),
-                         'bus': int(dev._bus.dirname)
+                         'bus': dev.get_bus()
                          })
 
     for reading in readings:
         if disp_ports:
-            portinfo = " (bus %d - port %s)" % (reading['bus'],
+            portinfo = " (bus %s - port %s)" % (reading['bus'],
                                                 reading['ports'])
         else:
             portinfo = ""

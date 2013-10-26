@@ -86,8 +86,11 @@ class TemperDevice():
         else:
             return ""
 
-    def get_location(self):
-        return self._bus.dirname + '-' + self.get_ports()
+    def get_bus(self):
+        if self._bus and hasattr(self._bus, 'dirname'):
+            return str(int(self._bus.dirname))
+        else:
+            return ""
 
     def get_temperature(self, format='celsius'):
         try:
