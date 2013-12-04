@@ -1,0 +1,13 @@
+#!/bin/sh
+
+export PATH=/usr/local/bin:$PATH
+
+if [ "$1" = config ]; then
+    echo "graph_title Temperature"
+    echo "graph_vlabel °C"
+    echo "graph_category sensors"
+    echo "graph_scale no"
+    echo "temp.label Temperature in °C"
+else
+    echo temp.value `temper-poll |grep -E -o '[0-9]*\.[0-9]*°C'|grep -o '[0-9.]*'`
+fi
