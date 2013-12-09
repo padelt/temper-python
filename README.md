@@ -177,57 +177,62 @@ belongs to what OID if you are using SNMP.
 Long story short: Only use the device order if the USB bus is stable and you reboot after
 any plugging on the device. Even then, you are not safe. Sorry.
 
-Note by GM3D: Since calibration parameters must be set per each device, we need some way to identify them physically. As mentioned above, the serial number for all TEMPer devices is zero, so there is no true way to tell which is which programatically. The USB device number does not work either since it changes every time you reboot the machine or plug/unplug the device. The way that possibly can work is identifying them by the combination of the bus number and the USB port (possibly a chain of ports, if you have hubs in between), which is what I am doing for now. This information is basically the same with what you can get with "lsusb -t" and is based on the information in the sysfs directory /sys/bus/usb/devices (See below). So far I am assuming this scheme is persistent enough for regular use cases, but even the bus number may change in some cases like - for example - if your machine is a tablet like machine and you hotplug it to a keyboard dock with a USB root hub in it. In such case you will need to re-run lsusb and adjust the bus-port numbers in the configuration file accordingly. Atm I have no clue about SNMP OID persistence.
+## Note by GM3D
+
+Since calibration parameters must be set per each device, we need some way to identify them physically. As mentioned above, the serial number for all TEMPer devices is zero, so there is no true way to tell which is which programatically. The USB device number does not work either since it changes every time you reboot the machine or plug/unplug the device. The way that possibly can work is identifying them by the combination of the bus number and the USB port (possibly a chain of ports, if you have hubs in between), which is what I am doing for now.
+
+This information is basically the same with what you can get with `lsusb -t` and is based on the information in the sysfs directory `/sys/bus/usb/devices` (see below). So far I am assuming this scheme is persistent enough for regular use cases, but even the bus number may change in some cases like - for example - if your machine is a tablet like machine and you hotplug it to a keyboard dock with a USB root hub in it. In such case you will need to re-run `lsusb` and adjust the bus-port numbers in the configuration file accordingly. At the moment I have no clue about SNMP OID persistence.
 
 # Calibration parameters
-You can have parameters in the configuration file /etc/temper.conf for each of your TEMPer device to calibrate it's value with simple linear formula. If there is not this file on your machine it's fine, calibration is just skipped. The same if the program can't find a matching line with the actual device on the system.
 
-Format of calibration lines in /etc/temper.conf is:
+You can have parameters in the configuration file `/etc/temper.conf` for each of your TEMPer device to calibrate its value with simple linear formula. If there is not this file on your machine it's fine, calibration is just skipped. The same if the program can't find a matching line with the actual device on the system.
 
-n-m(.m)* : scale = a, offset = b
+Format of calibration lines in `/etc/temper.conf` is:
 
-where n is the USB bus number and m is (possibly a chain of) the USB port(s) 
-which your TEMPer device is plugged on. a and be are some floating values decided by experiment, we will come back to this later, first let me describe how n and m can be decided for your device.
+    n-m(.m)* : scale = a, offset = b
 
-You will need to use lsusb command in usbutils package to decide n and m. Use lsusb with and without -t option.
+where `n` is the USB bus number and `m` is (possibly a chain of) the USB port(s) 
+which your TEMPer device is plugged on. `a` and `b` are some floating values decided by experiment, we will come back to this later, first let me describe how n and m can be decided for your device.
+
+You will need to use `lsusb` command in usbutils package to decide `n` and `m`. Use `lsusb` with and without `-t` option.
 
 For example, assume the following outputs;
 
-$ lsusb
-Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-Bus 001 Device 016: ID 0c45:7401 Microdia 
-Bus 001 Device 015: ID 1a40:0101 TERMINUS TECHNOLOGY INC. USB-2.0 4-Port HUB
-Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+    $ lsusb
+    Bus 002 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+    Bus 001 Device 016: ID 0c45:7401 Microdia 
+    Bus 001 Device 015: ID 1a40:0101 TERMINUS TECHNOLOGY INC. USB-2.0 4-Port HUB
+    Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 
-$ lsusb -t
-/:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=orion-ehci/1p, 480M
-/:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=orion-ehci/1p, 480M
-    |__ Port 4: Dev 15, If 0, Class=hub, Driver=hub/4p, 12M
-        |__ Port 3: Dev 16, If 0, Class=HID, Driver=usbhid, 1.5M
-        |__ Port 3: Dev 16, If 1, Class=HID, Driver=usbhid, 1.5M
+    $ lsusb -t
+    /:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=orion-ehci/1p, 480M
+    /:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=orion-ehci/1p, 480M
+        |__ Port 4: Dev 15, If 0, Class=hub, Driver=hub/4p, 12M
+            |__ Port 3: Dev 16, If 0, Class=HID, Driver=usbhid, 1.5M
+            |__ Port 3: Dev 16, If 1, Class=HID, Driver=usbhid, 1.5M
 
 First output tells you your TEMPer device (0c45:7401 Microdia) is on the bus 1 and has (just currently, it may change time to time, even if you don't move it around) device ID = 16.
 
-Now look at the second output. looking this tree, your TEMPer device (Dev 16) on the bus 01 is connected to your pc through two ports, port 4 and port 3.
+Now look at the second output. Looking at this tree, your TEMPer device (Dev 16) on the bus 01 is connected to your pc through two ports, port 4 and port 3.
 Don't worry about two devices having the same Dev ID = 16, they both belong to a single TEMPer device (it uses two USB interfaces by default, which is normal).
 
-So in this example, n = 1 and m = 4.3; thus the config file should be like
+So in this example, `n = 1` and `m = 4.3`; thus the config file should be like
 
-1-4.3: scale = a, offset = b
+    1-4.3: scale = a, offset = b
 
-with a and b replaced with the actual values which you will need to measure and 
+with `a` and `b` replaced with the actual values which you will need to measure and 
 calculate for your own TEMPer device. These values are used in the formula
 
-y = a * x + b
+    y = a * x + b
 
 where
 
-y: calibrated temperature (in Celsius),
-x: raw temperature read from your TEMPer device (in Celsius).
+* `y`: calibrated temperature (in Celsius),
+* `x`: raw temperature read from your TEMPer device (in Celsius).
 
-You will need to find appropriate values for a and b for your TEMPer device by doing some experiment and basic math. (Either comparing it with another thermometer which you can rely on or measuring two temperatures which you already know ... like iced water and boiling water, but make sure in the latter case that you seal your TEMPer device firmly in a plastic bag or something, since it is NOT waterproof!)
+You will need to find appropriate values for `a` and `b` for your TEMPer device by doing some experiment and basic math. Either comparing it with another thermometer which you can rely on or measuring two temperatures which you already know ... like iced water and boiling water, but make sure in the latter case that you seal your TEMPer device firmly in a plastic bag or something, since it is NOT waterproof!
 
-(To find out bus and port numbers, you can also try running temper-poll with -p option, which will contain information in the form (bus 1 - port 4.3) in the above example. This might be actually easier than looking at the lsusb outputs, as long as it works.)
+To find out bus and port numbers, you can also try running temper-poll with -p option, which will contain information in the form (bus 1 - port 4.3) in the above example. This might be actually easier than looking at the `lsusb` outputs, as long as it works.
 
 # Origins
 
