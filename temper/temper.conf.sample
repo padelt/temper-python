@@ -1,0 +1,15 @@
+# configuration for calibrating your TEMPer device.
+# example line:
+#1-1.2: scale = 0.95, offset = -2.2
+# the above example indicates the output y of temper-poll and SNMP for 
+# your TEMPer device which is on USB bus 1 through port 1 and port 2 will be
+# calculated with y = 0.95 * x - 2.2, where x is the raw uncalibrated  output
+# from the device (in Celsius).
+# Default values are scale = 1.0 and offset = 0.0, which simply means y = x.
+# Using this bus-(chain of)port(s) combination, you can uniquely specify your
+# device. Also you can have lines for multiple TEMPer device since they are
+# distinguishable with this scheme.
+# Don't just uncomment the example line, you need the specific correct values 
+# for yourself.
+# To decide what these numbers will be in your case, see calibration 
+# parameters section in README.md.
