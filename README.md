@@ -244,3 +244,4 @@ as seen on [Google+](https://plus.google.com/105569853186899442987/posts/N9T7xAj
 * Original rewrite by Philipp Adelt <autosort-github@philipp.adelt.net>
 * Additional work by Brian Cline
 * Calibration code by Joji Monma (@GM3D on Github)
+* Munin plugin by Alexander Schier (@allo- on Github)
