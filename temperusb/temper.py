@@ -19,11 +19,13 @@ VIDPIDS = [(0x0c45L, 0x7401L)]
 REQ_INT_LEN = 8
 ENDPOINT = 0x82
 INTERFACE = 1
+CONFIG_NO = 1
 TIMEOUT = 5000
 USB_PORTS_STR = '^\s*(\d+)-(\d+(?:\.\d+)*)'
 CALIB_LINE_STR = USB_PORTS_STR +\
     '\s*:\s*scale\s*=\s*([+|-]?\d*\.\d+)\s*,\s*offset\s*=\s*([+|-]?\d*\.\d+)'
 USB_SYS_PREFIX = '/sys/bus/usb/devices/'
+LOGGER = logging.getLogger(__name__)
 
 
 def readattr(path, name):
@@ -124,13 +126,12 @@ class TemperDevice(object):
         """
         try:
             # Take control of device if required
-            if self._device.is_kernel_driver_active:
-                for interface in [0, 1]:
-                    try:
-                        self._device.detach_kernel_driver(interface)
-                    except usb.USBError:
-                        pass
-                self._device.set_configuration(1)
+            if self._device.is_kernel_driver_active(INTERFACE):
+	        try:
+		    self._device.detach_kernel_driver(INTERFACE)
+	        except usb.USBError as err:
+		    LOGGER.debug('Error detaching kernel driver: {0}'.format(err))
+                self._device.set_configuration(CONFIG_NO)
                 self._device.ctrl_transfer(
                     bmRequestType=0x21,
                     bRequest=0x09,
@@ -174,6 +175,7 @@ class TemperDevice(object):
         Send device a control request with standard parameters and <data> as
         payload.
         """
+	LOGGER.debug('Sending control transfer: {0}'.format(data))
         self._device.ctrl_transfer(
             bmRequestType=0x21,
             bRequest=0x09,
@@ -187,6 +189,7 @@ class TemperDevice(object):
         Read data from device.
         """
         data = self._device.read(ENDPOINT, REQ_INT_LEN, interface=INTERFACE, timeout=TIMEOUT)
+	LOGGER.debug('Read data: {0}'.format(data))
         return data
 
 
@@ -199,6 +202,7 @@ class TemperHandler(object):
         for vid, pid in VIDPIDS:
             self._devices = [TemperDevice(device) for device in \
                 usb.core.find(find_all=True, idVendor=vid, idProduct=pid)]
+	LOGGER.info('Found {0} TEMPer devices'.format(len(self._devices)))
 
     def get_devices(self):
         """
