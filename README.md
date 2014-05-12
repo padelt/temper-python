@@ -267,4 +267,4 @@ as seen on [Google+](https://plus.google.com/105569853186899442987/posts/N9T7xAj
 * Additional work by Brian Cline
 * Calibration code by Joji Monma (@GM3D on Github)
 * Munin plugin by Alexander Schier (@allo- on Github)
-* PyPI packge work by James Stewart (@amorphic on Github)
+* PyPI package work and rewrite to `libusb1` by James Stewart (@amorphic on Github)
