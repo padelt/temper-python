@@ -32,18 +32,25 @@ If your system does not provide access as a normal user to the USB device, you n
 temper-poll accepts -p option now, which adds the USB bus and port information each device is plugged on.
 
 without -p option
-$ temper-poll
-Found 1 devices
-Device #0: 22.5°C 72.5°F
+
+    $ temper-poll
+    Found 1 devices
+    Device #0: 22.5°C 72.5°F
 
 with -p option
-$ temper-poll -p
-Found 1 devices
-Device #0 (bus 1 - port 1.3): 22.4°C 72.3°F
+
+    $ temper-poll -p
+    Found 1 devices
+    Device #0 (bus 1 - port 1.3): 22.4°C 72.3°F
 
 Which tells you there is a a USB hub plugged (internally or externally) on the port 1 of the bus 1 of the host, and your TEMPer device  is on the port 3 of that hub.
 
-## Tell kernel to leave TEMPer alone (Errors `usb.core.USBError: [Errno 16] Resource busy` and `Unknown error`)
+## Tell kernel to leave TEMPer alone 
+
+Regarding errors:
+
+- `usb.core.USBError: [Errno 16] Resource busy`
+- `Unknown error`
 
 By default, the Linux kernel claims (e.g. opens/uses) the TEMPer device as a keyboard (HID device).
 When that happens, this script is not able to set the configuration and communicate with it.
@@ -56,7 +63,7 @@ To prevent this, add this to the kernel command line:
 
     usbhid.quirks=0x0c45:0x7401:0x4
 
-On Raspbian, this will be `/boot/cmdline.txt`. Reboot after saving and retry. Hat tip to and more information from [AndiDog here](http://unix.stackexch
+On Raspbian, this will be `/boot/cmdline.txt`. Reboot after saving and retry. Hat tip to and more information from [AndiDog here](http://unix.stackexchange.com/questions/55495/prevent-usbhid-from-claiming-usb-device).
 
 # Serving via SNMP
 
