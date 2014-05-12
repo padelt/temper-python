@@ -1,66 +1,89 @@
 # encoding: utf-8
 #
-# Handles devices reporting themselves as USB VID/PID 0C45:7401 (mine also says RDing TEMPerV1.2).
+# Handles devices reporting themselves as USB VID/PID 0C45:7401 (mine also says
+# RDing TEMPerV1.2).
 #
 # Copyright 2012-2014 Philipp Adelt <info@philipp.adelt.net>
 #
-# This code is licensed under the GNU public license (GPL). See LICENSE.md for details.
+# This code is licensed under the GNU public license (GPL). See LICENSE.md for
+# details.
 
 import usb
 import sys
 import struct
 import os
 import re
+import logging
 
-VIDPIDs = [(0x0c45L,0x7401L)]
+VIDPIDS = [(0x0c45L, 0x7401L)]
 REQ_INT_LEN = 8
-REQ_BULK_LEN = 8
-TIMEOUT = 2000
+ENDPOINT = 0x82
+INTERFACE = 1
+CONFIG_NO = 1
+TIMEOUT = 5000
 USB_PORTS_STR = '^\s*(\d+)-(\d+(?:\.\d+)*)'
 CALIB_LINE_STR = USB_PORTS_STR +\
     '\s*:\s*scale\s*=\s*([+|-]?\d*\.\d+)\s*,\s*offset\s*=\s*([+|-]?\d*\.\d+)'
+USB_SYS_PREFIX = '/sys/bus/usb/devices/'
+LOGGER = logging.getLogger(__name__)
 
-USB_SYS_PREFIX='/sys/bus/usb/devices/'
 
 def readattr(path, name):
-    """Read attribute from sysfs and return as string"""
+    """
+    Read attribute from sysfs and return as string
+    """
     try:
-        f = open(USB_SYS_PREFIX + path + "/" + name);
-        return f.readline().rstrip("\n");
+        f = open(USB_SYS_PREFIX + path + "/" + name)
+        return f.readline().rstrip("\n")
     except IOError:
         return None
 
-def find_ports(bus, device):
-    """look into sysfs and find a device that matches given\
-    bus/device ID combination, then returns the port chain it is\
-    plugged on."""
-    bus_id = int(bus.dirname)
-    dev_id = int(device.filename)
+
+def find_ports(device):
+    """
+    Find the port chain a device is plugged on.
+
+    This is done by searching sysfs for a device that matches the device
+    bus/address combination.
+
+    Useful when the underlying usb lib does not return device.port_number for
+    whatever reason.
+    """
+    bus_id = device.bus
+    dev_id = device.address
     for dirent in os.listdir(USB_SYS_PREFIX):
         matches = re.match(USB_PORTS_STR + '$', dirent)
         if matches:
             bus_str = readattr(dirent, 'busnum')
             if bus_str:
-                busnum = int(bus_str)
+                busnum = float(bus_str)
             else:
                 busnum = None
             dev_str = readattr(dirent, 'devnum')
             if dev_str:
-                devnum = int(dev_str)
+                devnum = float(dev_str)
             else:
                 devnum = None
             if busnum == bus_id and devnum == dev_id:
-                return matches.groups()[1]
+                return float(matches.groups()[1])
 
-class TemperDevice():
-    def __init__(self, device, bus):
+
+class TemperDevice(object):
+    """
+    A TEMPer USB thermometer.
+    """
+    def __init__(self, device):
         self._device = device
-        self._bus = bus
-        self._handle = None
-        self._ports = find_ports(bus, device)
+        self._bus = device.bus
+        self._ports = getattr(device, 'port_number', None)
+        if self._ports == None:
+            self._ports = find_ports(device)
         self.set_calibration_data()
 
     def set_calibration_data(self):
+        """
+        Set device calibration data based on settings in /etc/temper.conf.
+        """
         self._scale = 1.0
         self._offset = 0.0
         try:
@@ -80,83 +103,109 @@ class TemperDevice():
                     if ports == self._ports:
                         self._scale = scale
                         self._offset = offset
+
     def get_ports(self):
+        """
+        Get device USB ports.
+        """
         if self._ports:
             return self._ports
-        else:
-            return ""
+        return '' 
 
     def get_bus(self):
-        if self._bus and hasattr(self._bus, 'dirname'):
-            return str(int(self._bus.dirname))
-        else:
-            return ""
+        """
+        Get device USB bus.
+        """
+        if self._bus:
+            return self._bus
+        return ''
 
     def get_temperature(self, format='celsius'):
+        """
+        Get device temperature reading.
+        """
         try:
-            if not self._handle:
-                self._handle = self._device.open()
-                try:
-                    self._handle.detachKernelDriver(0)
-                except usb.USBError:
-                    pass
-                try:
-                    self._handle.detachKernelDriver(1)
-                except usb.USBError:
-                    pass
-                self._handle.setConfiguration(1)
-                self._handle.claimInterface(0)
-                self._handle.claimInterface(1)
-                self._handle.controlMsg(requestType=0x21, request=0x09, value=0x0201, index=0x00, buffer="\x01\x01", timeout=TIMEOUT) # ini_control_transfer
-
-            self._control_transfer(self._handle, "\x01\x80\x33\x01\x00\x00\x00\x00") # uTemperatura
-            self._interrupt_read(self._handle)
-            self._control_transfer(self._handle, "\x01\x82\x77\x01\x00\x00\x00\x00") # uIni1
-            self._interrupt_read(self._handle)
-            self._control_transfer(self._handle, "\x01\x86\xff\x01\x00\x00\x00\x00") # uIni2
-            self._interrupt_read(self._handle)
-            self._interrupt_read(self._handle)
-            self._control_transfer(self._handle, "\x01\x80\x33\x01\x00\x00\x00\x00") # uTemperatura
-            data = self._interrupt_read(self._handle)
-            data_s = "".join([chr(byte) for byte in data])
-            temp_c = 125.0/32000.0*(struct.unpack('>h', data_s[2:4])[0])
-            temp_c = temp_c * self._scale + self._offset
-            if format == 'celsius':
-                return temp_c
-            elif format == 'fahrenheit':
-                return temp_c*1.8+32.0
-            elif format == 'millicelsius':
-                return int(temp_c*1000)
-            else:
-                raise ValueError("Unknown format")
+            # Take control of device if required
+            if self._device.is_kernel_driver_active(INTERFACE):
+	        try:
+		    self._device.detach_kernel_driver(INTERFACE)
+	        except usb.USBError as err:
+		    LOGGER.debug('Error detaching kernel driver: {0}'.format(err))
+                self._device.set_configuration(CONFIG_NO)
+                self._device.ctrl_transfer(
+                    bmRequestType=0x21,
+                    bRequest=0x09,
+                    wValue=0x0201,
+                    wIndex=0x00,
+                    data_or_wLength='\x01\x01',
+                    timeout=TIMEOUT)
+            # Get temperature
+            self._control_transfer("\x01\x80\x33\x01\x00\x00\x00\x00")  # Temp
+            self._interrupt_read()
+            self._control_transfer("\x01\x82\x77\x01\x00\x00\x00\x00")  # Ini1
+            self._interrupt_read()
+            self._control_transfer("\x01\x86\xff\x01\x00\x00\x00\x00")  # Ini2
+            self._interrupt_read()
+            self._interrupt_read()
+            self._control_transfer("\x01\x80\x33\x01\x00\x00\x00\x00")  # Temp
+            data = self._interrupt_read()
         except usb.USBError, e:
-            self.close()
+            # Catch the permissions exception and add our message
             if "not permitted" in str(e):
-                raise Exception("Permission problem accessing USB. Maybe I need to run as root?")
+                raise Exception(
+                    "Permission problem accessing USB. "
+                    "Maybe I need to run as root?")
             else:
                 raise
+        # Interpret device response
+        data_s = "".join([chr(byte) for byte in data])
+        temp_c = 125.0/32000.0*(struct.unpack('>h', data_s[2:4])[0])
+        temp_c = temp_c * self._scale + self._offset
+        if format == 'celsius':
+            return temp_c
+        elif format == 'fahrenheit':
+            return temp_c*1.8+32.0
+        elif format == 'millicelsius':
+            return int(temp_c*1000)
+        else:
+            raise ValueError("Unknown format")
 
-    def close(self):
-        if self._handle:
-            try:
-                self._handle.releaseInterface()
-            except ValueError:
-                pass
-            self._handle = None
+    def _control_transfer(self, data):
+        """
+        Send device a control request with standard parameters and <data> as
+        payload.
+        """
+	LOGGER.debug('Sending control transfer: {0}'.format(data))
+        self._device.ctrl_transfer(
+            bmRequestType=0x21,
+            bRequest=0x09,
+            wValue=0x0200,
+            wIndex=0x01,
+            data_or_wLength=data,
+            timeout=TIMEOUT)
 
-    def _control_transfer(self, handle, data):
-        handle.controlMsg(requestType=0x21, request=0x09, value=0x0200, index=0x01, buffer=data, timeout=TIMEOUT)
+    def _interrupt_read(self):
+        """
+        Read data from device.
+        """
+        data = self._device.read(ENDPOINT, REQ_INT_LEN, interface=INTERFACE, timeout=TIMEOUT)
+	LOGGER.debug('Read data: {0}'.format(data))
+        return data
 
-    def _interrupt_read(self, handle):
-        return handle.interruptRead(0x82, REQ_INT_LEN)
 
+class TemperHandler(object):
+    """
+    Handler for TEMPer USB thermometers.
+    """
 
-class TemperHandler():
     def __init__(self):
-        busses = usb.busses()
-        self._devices = []
-        for bus in busses:
-            self._devices.extend([TemperDevice(x, bus) for x in bus.devices if (x.idVendor,x.idProduct) in VIDPIDs])
+        for vid, pid in VIDPIDS:
+            self._devices = [TemperDevice(device) for device in \
+                usb.core.find(find_all=True, idVendor=vid, idProduct=pid)]
+	LOGGER.info('Found {0} TEMPer devices'.format(len(self._devices)))
 
     def get_devices(self):
+        """
+        Get a list of all devices attached to this handler
+        """
         return self._devices
