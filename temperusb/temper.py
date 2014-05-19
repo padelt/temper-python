@@ -24,6 +24,12 @@ USB_PORTS_STR = '^\s*(\d+)-(\d+(?:\.\d+)*)'
 CALIB_LINE_STR = USB_PORTS_STR +\
     '\s*:\s*scale\s*=\s*([+|-]?\d*\.\d+)\s*,\s*offset\s*=\s*([+|-]?\d*\.\d+)'
 USB_SYS_PREFIX = '/sys/bus/usb/devices/'
+COMMANDS = {
+    'temp': '\x01\x80\x33\x01\x00\x00\x00\x00',
+    'ini1': '\x01\x82\x77\x01\x00\x00\x00\x00',
+    'ini2': '\x01\x86\xff\x01\x00\x00\x00\x00',
+}
+LOGGER = logging.getLogger(__name__)
 
 
 def readattr(path, name):
@@ -77,6 +83,8 @@ class TemperDevice(object):
         if self._ports == None:
             self._ports = find_ports(device)
         self.set_calibration_data()
+        LOGGER.debug('Found device | Bus:{0} Ports:{1}'.format(
+            self._bus, self._ports))
 
     def set_calibration_data(self):
         """
@@ -125,36 +133,36 @@ class TemperDevice(object):
         try:
             # Take control of device if required
             if self._device.is_kernel_driver_active:
+                LOGGER.debug('Taking control of device on bus {0} ports '
+                    '{1}'.format(self._bus, self._ports))
                 for interface in [0, 1]:
                     try:
                         self._device.detach_kernel_driver(interface)
-                    except usb.USBError:
-                        pass
-                self._device.set_configuration(1)
+                    except usb.USBError as err:
+                        LOGGER.debug(err)
+                self._device.set_configuration()
                 self._device.ctrl_transfer(
-                    bmRequestType=0x21,
-                    bRequest=0x09,
-                    wValue=0x0201,
-                    wIndex=0x00,
-                    data_or_wLength='\x01\x01',
-                    timeout=TIMEOUT)
+                    bmRequestType=0x21, bRequest=0x09, wValue=0x0201,
+                    wIndex=0x00, data_or_wLength='\x01\x01', timeout=TIMEOUT)
             # Get temperature
-            self._control_transfer("\x01\x80\x33\x01\x00\x00\x00\x00")  # Temp
+            self._control_transfer(COMMANDS['temp'])
             self._interrupt_read()
-            self._control_transfer("\x01\x82\x77\x01\x00\x00\x00\x00")  # Ini1
+            self._control_transfer(COMMANDS['ini1'])
             self._interrupt_read()
-            self._control_transfer("\x01\x86\xff\x01\x00\x00\x00\x00")  # Ini2
+            self._control_transfer(COMMANDS['ini2'])
             self._interrupt_read()
             self._interrupt_read()
-            self._control_transfer("\x01\x80\x33\x01\x00\x00\x00\x00")  # Temp
+            self._control_transfer(COMMANDS['temp'])
             data = self._interrupt_read()
-        except usb.USBError, e:
+            self._device.reset()
+        except usb.USBError as err:
             # Catch the permissions exception and add our message
-            if "not permitted" in str(e):
+            if "not permitted" in str(err):
                 raise Exception(
                     "Permission problem accessing USB. "
                     "Maybe I need to run as root?")
             else:
+                LOGGER.error(err)
                 raise
         # Interpret device response
         data_s = "".join([chr(byte) for byte in data])
@@ -174,6 +182,7 @@ class TemperDevice(object):
         Send device a control request with standard parameters and <data> as
         payload.
         """
+        LOGGER.debug('Ctrl transfer: {0}'.format(data))
         self._device.ctrl_transfer(
             bmRequestType=0x21,
             bRequest=0x09,
@@ -187,6 +196,7 @@ class TemperDevice(object):
         Read data from device.
         """
         data = self._device.read(ENDPOINT, REQ_INT_LEN, interface=INTERFACE, timeout=TIMEOUT)
+        LOGGER.debug('Read data: {0}'.format(data))
         return data
 
 
