@@ -70,7 +70,7 @@ def find_ports(device):
             else:
                 devnum = None
             if busnum == bus_id and devnum == dev_id:
-                return float(matches.groups()[1])
+                return str(matches.groups()[1])
 
 
 class TemperDevice(object):
