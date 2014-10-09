@@ -15,7 +15,10 @@ import os
 import re
 import logging
 
-VIDPIDS = [(0x0c45L, 0x7401L)]
+VIDPIDS = [
+    (0x0c45L, 0x7401L),
+    (0x1130L, 0x660cL),
+]
 REQ_INT_LEN = 8
 ENDPOINT = 0x82
 INTERFACE = 1
