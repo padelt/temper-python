@@ -205,8 +205,9 @@ class TemperHandler(object):
     """
 
     def __init__(self):
+        self._devices = []
         for vid, pid in VIDPIDS:
-            self._devices = [TemperDevice(device) for device in \
+            self._devices += [TemperDevice(device) for device in \
                 usb.core.find(find_all=True, idVendor=vid, idProduct=pid)]
 	LOGGER.info('Found {0} TEMPer devices'.format(len(self._devices)))
 
