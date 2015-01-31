@@ -76,3 +76,6 @@ def main():
                      portinfo,
                      reading['temperature_c'],
                      reading['temperature_f']))
+
+if __name__ == '__main__':
+    main()
