@@ -1,6 +1,6 @@
 # encoding: utf-8
 from __future__ import print_function
-from temper import TemperHandler
+from temperusb.temper import TemperHandler
 import getopt, sys, os.path
 
 def usage():
