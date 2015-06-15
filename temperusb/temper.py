@@ -144,6 +144,11 @@ class TemperDevice(object):
                     except usb.USBError as err:
                         LOGGER.debug(err)
                 self._device.set_configuration()
+                # Prevent kernel message:
+                # "usbfs: process <PID> (python) did not claim interface x before use"
+                for interface in [0, 1]:
+                    usb.util.claim_interface(self._device, interface)
+                    usb.util.claim_interface(self._device, interface)
                 self._device.ctrl_transfer(bmRequestType=0x21, bRequest=0x09,
                     wValue=0x0201, wIndex=0x00, data_or_wLength='\x01\x01',
                     timeout=TIMEOUT)
@@ -157,7 +162,10 @@ class TemperDevice(object):
             self._interrupt_read()
             self._control_transfer(COMMANDS['temp'])
             data = self._interrupt_read()
-            self._device.reset()
+            # Seems unneccessary to reset each time
+            # Also ends up hitting syslog with this kernel message each time:
+            # "reset low speed USB device number x using uhci_hcd"
+            # self._device.reset()
         except usb.USBError as err:
             # Catch the permissions exception and add our message
             if "not permitted" in str(err):
