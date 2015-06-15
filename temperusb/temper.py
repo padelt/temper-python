@@ -129,10 +129,21 @@ class TemperDevice(object):
             return self._bus
         return ''
 
-    def get_temperature(self, format='celsius'):
+    def get_temperature(self, format='celsius', sensor=0):
         """
         Get device temperature reading.
         """
+        # Only supported sensors are 0 and 1 at this stage.
+        # If you have the 8 sensor model, please contribute to the 
+        # discussion here: https://github.com/padelt/temper-python/issues/19
+        if sensor not in [0, 1, "all"]:
+            raise ValueError('Only sensor 0 or 1, or the keyword "all" supported')
+       
+        if sensor == 0 or sensor == 1:
+            offsets = [(sensor + 1) * 2,]
+        elif sensor == "all":
+            offsets = [2, 4,]
+
         try:
             # Take control of device if required
             if self._device.is_kernel_driver_active:
@@ -167,16 +178,28 @@ class TemperDevice(object):
             else:
                 LOGGER.error(err)
                 raise
+        
         # Interpret device response
-        data_s = "".join([chr(byte) for byte in data])
-        temp_c = 125.0/32000.0*(struct.unpack('>h', data_s[2:4])[0])
-        temp_c = temp_c * self._scale + self._offset
+        temp_c = []
+        for offset in offsets:
+            data_s = "".join([chr(byte) for byte in data])
+            value = (struct.unpack('>h', data_s[offset:(offset + 2)])[0])
+            temp_c.append((125.0 / 32000.0) * value)
+            temp_c[-1] = temp_c[-1] * self._scale + self._offset
+
+        # Return the result or results
         if format == 'celsius':
+            if len(temp_c) == 1:
+                return temp_c[0]
             return temp_c
         elif format == 'fahrenheit':
-            return temp_c*1.8+32.0
+            if len(temp_c) == 1:
+                return temp_c[0] * 1.8 + 32.0
+            return [x * 1.8 + 32.0 for x in temp_c]
         elif format == 'millicelsius':
-            return int(temp_c*1000)
+            if len(temp_c) == 1:
+                return int(temp_c[0] * 1000)
+            return [int(x * 1000) for x in temp_c]
         else:
             raise ValueError("Unknown format")
 
