@@ -33,7 +33,7 @@ def main():
             quiet_output = True
         elif o == "-s":
             try:
-                sensor_id = int(float(a))
+                sensor_id = int(a)
             except ValueError:
                 assert False, "Sensor ID could not be parsed, please use valid integer"
         elif o in ("-h", "--help"):
