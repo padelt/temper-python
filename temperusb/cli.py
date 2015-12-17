@@ -4,20 +4,22 @@ from temper import TemperHandler
 import getopt, sys, os.path
 
 def usage():
-    print("%s [-p] [-q] [-c|-f] [-h|--help]" % os.path.basename(sys.argv[0]))
+    print("%s [-p] [-q] [-c|-f] [-s 0|1] [-h|--help]" % os.path.basename(sys.argv[0]))
     print("  -q    quiet: only output temperature as a floating number. Usefull for external program parsing")
     print("        this option requires the use of -c or -f")
     print("  -c    with -q, outputs temperature in celcius degrees.")
     print("  -f    with -q, outputs temperature in fahrenheit degrees.")
+    print("  -s    with sensor ID following utilizes that sensor on the device (multisensor devices only).")
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], ":hpcfq", ["help"])
+        opts, args = getopt.getopt(sys.argv[1:], ":hpcfqs:", ["help"])
     except getopt.GetoptError as err:
         print(str(err))
         usage()
         sys.exit(2)
     degree_unit = False
+    sensor_id = 0  # Default to first sensor unless specified
     disp_ports = False
     quiet_output = False
     for o, a in opts:
@@ -29,6 +31,11 @@ def main():
             degree_unit = 'f'
         elif o == "-q":
             quiet_output = True
+        elif o == "-s":
+            try:
+                sensor_id = int(a)
+            except ValueError:
+                assert False, "Sensor ID could not be parsed, please use valid integer"
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
@@ -47,9 +54,9 @@ def main():
 
     for i, dev in enumerate(devs):
         readings.append({'device': i,
-                         'temperature_c': dev.get_temperature(),
+                         'temperature_c': dev.get_temperature(sensor=sensor_id),
                          'temperature_f':
-                         dev.get_temperature(format="fahrenheit"),
+                         dev.get_temperature(format="fahrenheit",sensor=sensor_id),
                          'ports': dev.get_ports(),
                          'bus': dev.get_bus()
                          })
@@ -71,7 +78,7 @@ def main():
                                                     reading['ports'])
             else:
                 portinfo = ""
-            print('Device #%i%s: %0.1f°C %0.1f°F' 
+            print('Device #%i%s: %0.1f°C %0.1f°F'
                   % (reading['device'],
                      portinfo,
                      reading['temperature_c'],
