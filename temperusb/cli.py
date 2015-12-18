@@ -4,12 +4,12 @@ from temper import TemperHandler
 import getopt, sys, os.path
 
 def usage():
-    print("%s [-p] [-q] [-c|-f] [-s 0|1] [-h|--help]" % os.path.basename(sys.argv[0]))
+    print("%s [-p] [-q] [-c|-f] [-s 0|1|all] [-h|--help]" % os.path.basename(sys.argv[0]))
     print("  -q    quiet: only output temperature as a floating number. Usefull for external program parsing")
     print("        this option requires the use of -c or -f")
     print("  -c    with -q, outputs temperature in celcius degrees.")
     print("  -f    with -q, outputs temperature in fahrenheit degrees.")
-    print("  -s    with sensor ID following utilizes that sensor on the device (multisensor devices only).")
+    print("  -s    with sensor ID (or all) following utilizes that sensor on the device (multisensor devices only).")
 
 def main():
     try:
@@ -32,10 +32,13 @@ def main():
         elif o == "-q":
             quiet_output = True
         elif o == "-s":
-            try:
-                sensor_id = int(a)
-            except ValueError:
-                assert False, "Sensor ID could not be parsed, please use valid integer"
+            if a == "all":
+                sensor_id = "all"
+            else:
+                try:
+                    sensor_id = int(a)
+                except ValueError:
+                    assert False, "Sensor ID could not be parsed, please use valid integer"
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
