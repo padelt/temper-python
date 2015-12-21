@@ -12,7 +12,7 @@ import sys
 import syslog
 import threading
 import snmp_passpersist as snmp
-from temper import TemperHandler, TemperDevice
+from temperusb.temper import TemperHandler, TemperDevice
 
 ERROR_TEMPERATURE = 9999
 
