@@ -166,6 +166,10 @@ class TemperDevice(object):
             # Also ends up hitting syslog with this kernel message each time:
             # "reset low speed USB device number x using uhci_hcd"
             # self._device.reset()
+
+            # Be a nice citizen and undo potential interface claiming.
+            # Also see: https://github.com/walac/pyusb/blob/master/docs/tutorial.rst#dont-be-selfish
+            usb.util.dispose_resources(self._device)
         except usb.USBError as err:
             # Catch the permissions exception and add our message
             if "not permitted" in str(err):
