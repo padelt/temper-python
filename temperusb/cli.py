@@ -33,7 +33,7 @@ def main():
             usage()
             sys.exit()
         else:
-            assert False, "unhandled option"
+            raise RuntimeError("Unhandled option '%s'" % o)
 
     if quiet_output and not degree_unit:
         print('You need to specify unit (-c of -f) when using -q option')
