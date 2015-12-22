@@ -93,8 +93,7 @@ def main():
                     output = output[0:len(output) - 2]
                     print(output)
             else:
-                print('how did I end up here?')
-                sys.exit(1)
+                raise ValueError('degree_unit expected to be c or f, got %s' % degree_unit)
         else:
             if disp_ports:
                 portinfo = " (bus %s - port %s)" % (reading['bus'],
