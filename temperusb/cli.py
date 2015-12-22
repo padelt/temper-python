@@ -37,8 +37,10 @@ def main():
             else:
                 try:
                     sensor_id = int(a)
-                except ValueError:
-                    assert False, "Sensor ID could not be parsed, please use valid integer"
+                except ValueError as err:
+                    print(str(err))
+                    usage()
+                    sys.exit(3)
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
