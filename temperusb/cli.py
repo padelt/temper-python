@@ -9,7 +9,7 @@ def usage():
     print("        this option requires the use of -c or -f")
     print("  -c    with -q, outputs temperature in celcius degrees.")
     print("  -f    with -q, outputs temperature in fahrenheit degrees.")
-    print("  -s    with sensor ID (or all) following utilizes that sensor on the device (multisensor devices only).")
+    print("  -s    sensor ID 0, 1, or all, to utilize that sensor(s) on the device (multisensor devices only).")
 
 def main():
     try:
