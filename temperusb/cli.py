@@ -101,11 +101,25 @@ def main():
                                                     reading['ports'])
             else:
                 portinfo = ""
-            print('Device #%i%s: %0.1f°C %0.1f°F'
-                  % (reading['device'],
-                     portinfo,
-                     reading['temperature_c'],
-                     reading['temperature_f']))
+
+            if type(reading['temperature_c']) is float:
+                print('Device #%i%s: %0.1f°C %0.1f°F'
+                      % (reading['device'],
+                         portinfo,
+                         reading['temperature_c'],
+                         reading['temperature_f']))
+            else:
+                output = 'Device #%i%s: ' % (
+                    reading['device'],
+                    portinfo,
+                )
+                for index in range(0, len(reading['temperature_c'])):
+                    output += '%0.1f°C %0.1f°F; ' % (
+                        reading['temperature_c'][index],
+                        reading['temperature_f'][index],
+                    )
+                output = output[0:len(output) - 2]
+                print(output)
 
 if __name__ == '__main__':
     main()
