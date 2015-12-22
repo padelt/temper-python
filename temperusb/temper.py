@@ -209,6 +209,10 @@ class TemperDevice(object):
         LOGGER.debug('Read data: {0}'.format(data))
         return data
 
+    def close(self):
+        """Does nothing in this device. Other device types may need to do cleanup here."""
+        pass
+
 
 class TemperHandler(object):
     """
