@@ -113,7 +113,7 @@ class TemperDevice(object):
                         ports = matches.groups()[1]
                         scale = float(matches.groups()[2])
                         offset = float(matches.groups()[3])
-                        if ports == self._ports:
+                        if str(ports) == str(self._ports):
                             self._scale = scale
                             self._offset = offset
         else:
