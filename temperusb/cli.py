@@ -37,6 +37,10 @@ def main():
             else:
                 try:
                     sensor_id = int(a)
+                    if not (sensor_id == 0 or sensor_id == 1):
+                        raise ValueError(
+                            "sensor_id should be 0 or 1, %d given" % sensor_id
+                            )
                 except ValueError as err:
                     print(str(err))
                     usage()
