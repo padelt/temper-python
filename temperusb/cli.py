@@ -9,7 +9,7 @@ def usage():
     print("        this option requires the use of -c or -f")
     print("  -c    with -q, outputs temperature in celcius degrees.")
     print("  -f    with -q, outputs temperature in fahrenheit degrees.")
-    print("  -s    with sensor ID (or all) following utilizes that sensor on the device (multisensor devices only).")
+    print("  -s    sensor ID 0, 1, or all, to utilize that sensor(s) on the device (multisensor devices only).")
 
 def main():
     try:
@@ -37,8 +37,14 @@ def main():
             else:
                 try:
                     sensor_id = int(a)
-                except ValueError:
-                    assert False, "Sensor ID could not be parsed, please use valid integer"
+                    if not (sensor_id == 0 or sensor_id == 1):
+                        raise ValueError(
+                            "sensor_id should be 0 or 1, %d given" % sensor_id
+                            )
+                except ValueError as err:
+                    print(str(err))
+                    usage()
+                    sys.exit(3)
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
