@@ -73,25 +73,52 @@ def main():
     for reading in readings:
         if quiet_output:
             if degree_unit == 'c':
-                print('%0.1f'
-                    % reading['temperature_c'])
+                if type(reading['temperature_c']) is float:
+                    print('%0.1f'
+                        % reading['temperature_c'])
+                else:
+                    output = ''
+                    for sensor in reading['temperature_c']:
+                        output += '%0.1f; ' % sensor
+                    output = output[0:len(output) - 2]
+                    print(output)
             elif degree_unit == 'f':
-                print('%0.1f'
-                    % reading['temperature_f'])
+                if type(reading['temperature_c']) is float:
+                    print('%0.1f'
+                        % reading['temperature_f'])
+                else:
+                    output = ''
+                    for sensor in reading['temperature_f']:
+                        output += '%0.1f; ' % sensor
+                    output = output[0:len(output) - 2]
+                    print(output)
             else:
-                print('how did I end up here?')
-                sys.exit(1)
+                raise ValueError('degree_unit expected to be c or f, got %s' % degree_unit)
         else:
             if disp_ports:
                 portinfo = " (bus %s - port %s)" % (reading['bus'],
                                                     reading['ports'])
             else:
                 portinfo = ""
-            print('Device #%i%s: %0.1f°C %0.1f°F'
-                  % (reading['device'],
-                     portinfo,
-                     reading['temperature_c'],
-                     reading['temperature_f']))
+
+            if type(reading['temperature_c']) is float:
+                print('Device #%i%s: %0.1f°C %0.1f°F'
+                      % (reading['device'],
+                         portinfo,
+                         reading['temperature_c'],
+                         reading['temperature_f']))
+            else:
+                output = 'Device #%i%s: ' % (
+                    reading['device'],
+                    portinfo,
+                )
+                for index in range(0, len(reading['temperature_c'])):
+                    output += '%0.1f°C %0.1f°F; ' % (
+                        reading['temperature_c'][index],
+                        reading['temperature_f'][index],
+                    )
+                output = output[0:len(output) - 2]
+                print(output)
 
 if __name__ == '__main__':
     main()
