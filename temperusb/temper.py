@@ -155,19 +155,27 @@ class TemperDevice(object):
                 for interface in [0, 1]:
                     usb.util.claim_interface(self._device, interface)
                     usb.util.claim_interface(self._device, interface)
-                self._device.ctrl_transfer(bmRequestType=0x21, bRequest=0x09,
-                    wValue=0x0201, wIndex=0x00, data_or_wLength='\x01\x01',
-                    timeout=TIMEOUT)
+
+                # Turns out we don't actually need that ctrl_transfer.
+                # Disabling this reduces number of USBErrors from ~7/30 to 0!
+                #self._device.ctrl_transfer(bmRequestType=0x21, bRequest=0x09,
+                #    wValue=0x0201, wIndex=0x00, data_or_wLength='\x01\x01',
+                #    timeout=TIMEOUT)
+
+
+            # Turns out a whole lot of that magic seems unnecessary.
+            #self._control_transfer(COMMANDS['temp'])
+            #self._interrupt_read()
+            #self._control_transfer(COMMANDS['ini1'])
+            #self._interrupt_read()
+            #self._control_transfer(COMMANDS['ini2'])
+            #self._interrupt_read()
+            #self._interrupt_read()
+
             # Get temperature
             self._control_transfer(COMMANDS['temp'])
-            self._interrupt_read()
-            self._control_transfer(COMMANDS['ini1'])
-            self._interrupt_read()
-            self._control_transfer(COMMANDS['ini2'])
-            self._interrupt_read()
-            self._interrupt_read()
-            self._control_transfer(COMMANDS['temp'])
             data = self._interrupt_read()
+
             # Seems unneccessary to reset each time
             # Also ends up hitting syslog with this kernel message each time:
             # "reset low speed USB device number x using uhci_hcd"
@@ -187,7 +195,7 @@ class TemperDevice(object):
                 raise
         # Interpret device response
         data_s = "".join([chr(byte) for byte in data])
-        temp_c = 125.0/32000.0*(struct.unpack('>h', data_s[2:4])[0])
+        temp_c = (struct.unpack('>h', data_s[2:4])[0])/256.0
         temp_c = temp_c * self._scale + self._offset
         if format == 'celsius':
             return temp_c
@@ -211,7 +219,7 @@ class TemperDevice(object):
         """
         Read data from device.
         """
-        data = self._device.read(ENDPOINT, REQ_INT_LEN, interface=INTERFACE, timeout=TIMEOUT)
+        data = self._device.read(ENDPOINT, REQ_INT_LEN, timeout=TIMEOUT)
         LOGGER.debug('Read data: {0}'.format(data))
         return data
 
