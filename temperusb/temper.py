@@ -243,6 +243,53 @@ class TemperDevice(object):
         else:
             raise ValueError("Unknown format")
 
+    def get_temperatures(self, sensors=None):
+        """
+        Get device temperature reading.
+
+        Params:
+        - sensors: optional list of sensors to get a reading for, examples:
+          [0,] - get reading for sensor 0
+          [0, 1,] - get reading for sensors 0 and 1
+          None - get readings for all sensors
+        """
+        _sensors = sensors
+        if _sensors is None:
+            _sensors = range(0, self._sensor_count)
+
+        if not set(_sensors).issubset(range(0, self._sensor_count)):
+            raise ValueError(
+                'Some or all of the sensors in the list %s are out of range '
+                'given a sensor_count of %d.  Valid range: %s' % (
+                    _sensors,
+                    self._sensor_count,
+                    range(0, self._sensor_count),
+                )
+            )
+
+        data = self.get_data()
+
+        results = {}
+
+        # Interpret device response
+        for sensor in _sensors:
+            offset = (sensor + 1) * 2
+            data_s = "".join([chr(byte) for byte in data])
+            value = (struct.unpack('>h', data_s[offset:(offset + 2)])[0])
+            celsius = (125.0 / 32000.0) * value
+            celsius = celsius * self._scale + self._offset
+            results[sensor] = {
+                'ports': self.get_ports(),
+                'bus': self.get_bus(),
+                'sensor': sensor,
+                'temperature_f': celsius * 1.8 + 32.0,
+                'temperature_c': celsius,
+                'temperature_mc': celsius * 1000,
+                'temperature_k': celsius + 273.15,
+            }
+
+        return results
+
     def _control_transfer(self, data):
         """
         Send device a control request with standard parameters and <data> as
