@@ -206,40 +206,14 @@ class TemperDevice(object):
         """
         Get device temperature reading.
         """
-        # Only supported sensors are 0 and 1 at this stage.
-        # If you have the 8 sensor model, please contribute to the
-        # discussion here: https://github.com/padelt/temper-python/issues/19
-        if sensor not in [0, 1, "all"]:
-            raise ValueError('Only sensor 0 or 1, or the keyword "all" supported')
+        results = self.get_temperatures(sensors=[sensor,])
 
-        if sensor == 0 or sensor == 1:
-            offsets = [(sensor + 1) * 2,]
-        elif sensor == "all":
-            offsets = [2, 4,]
-
-        data = self.get_data()
-
-        # Interpret device response
-        temp_c = []
-        for offset in offsets:
-            data_s = "".join([chr(byte) for byte in data])
-            value = (struct.unpack('>h', data_s[offset:(offset + 2)])[0])
-            temp_c.append(value / 256.0)
-            temp_c[-1] = temp_c[-1] * self._scale + self._offset
-
-        # Return the result or results
         if format == 'celsius':
-            if len(temp_c) == 1:
-                return temp_c[0]
-            return temp_c
+            return results[sensor]['temperature_c']
         elif format == 'fahrenheit':
-            if len(temp_c) == 1:
-                return temp_c[0] * 1.8 + 32.0
-            return [x * 1.8 + 32.0 for x in temp_c]
+            return results[sensor]['temperature_f']
         elif format == 'millicelsius':
-            if len(temp_c) == 1:
-                return int(temp_c[0] * 1000)
-            return [int(x * 1000) for x in temp_c]
+            return results[sensor]['temperature_mc']
         else:
             raise ValueError("Unknown format")
 
@@ -276,7 +250,7 @@ class TemperDevice(object):
             offset = (sensor + 1) * 2
             data_s = "".join([chr(byte) for byte in data])
             value = (struct.unpack('>h', data_s[offset:(offset + 2)])[0])
-            celsius = (125.0 / 32000.0) * value
+            celsius = value / 256.0
             celsius = celsius * self._scale + self._offset
             results[sensor] = {
                 'ports': self.get_ports(),
