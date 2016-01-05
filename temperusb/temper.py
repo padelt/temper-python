@@ -79,7 +79,9 @@ class TemperDevice(object):
     """
     A TEMPer USB thermometer.
     """
-    def __init__(self, device):
+    def __init__(self, device, sensor_count=1):
+        self.set_sensor_count(sensor_count)
+
         self._device = device
         self._bus = device.bus
         self._ports = getattr(device, 'port_number', None)
@@ -119,6 +121,20 @@ class TemperDevice(object):
         else:
             raise RuntimeError("Must set both scale and offset, or neither")
 
+    def set_sensor_count(self, count):
+        """
+        Set number of sensors on the device.
+
+        To do: revamp /etc/temper.conf file to include this data.
+        """
+        # Currently this only supports 1 and 2 sensor models.
+        # If you have the 8 sensor model, please contribute to the
+        # discussion here: https://github.com/padelt/temper-python/issues/19
+        if count not in [1, 2,]:
+            raise ValueError('Only sensor_count of 1 or 2 supported')
+
+        self._sensor_count = int(count)
+
     def get_ports(self):
         """
         Get device USB ports.
@@ -135,21 +151,10 @@ class TemperDevice(object):
             return self._bus
         return ''
 
-    def get_temperature(self, format='celsius', sensor=0):
+    def get_data(self):
         """
-        Get device temperature reading.
+        Get data from the USB device.
         """
-        # Only supported sensors are 0 and 1 at this stage.
-        # If you have the 8 sensor model, please contribute to the 
-        # discussion here: https://github.com/padelt/temper-python/issues/19
-        if sensor not in [0, 1, "all"]:
-            raise ValueError('Only sensor 0 or 1, or the keyword "all" supported')
-       
-        if sensor == 0 or sensor == 1:
-            offsets = [(sensor + 1) * 2,]
-        elif sensor == "all":
-            offsets = [2, 4,]
-
         try:
             # Take control of device if required
             if self._device.is_kernel_driver_active:
@@ -195,6 +200,7 @@ class TemperDevice(object):
             # Be a nice citizen and undo potential interface claiming.
             # Also see: https://github.com/walac/pyusb/blob/master/docs/tutorial.rst#dont-be-selfish
             usb.util.dispose_resources(self._device)
+            return data
         except usb.USBError as err:
             # Catch the permissions exception and add our message
             if "not permitted" in str(err):
@@ -204,30 +210,68 @@ class TemperDevice(object):
             else:
                 LOGGER.error(err)
                 raise
-        
-        # Interpret device response
-        temp_c = []
-        for offset in offsets:
-            data_s = "".join([chr(byte) for byte in data])
-            value = (struct.unpack('>h', data_s[offset:(offset + 2)])[0])
-            temp_c.append(value / 256.0)
-            temp_c[-1] = temp_c[-1] * self._scale + self._offset
 
-        # Return the result or results
+    def get_temperature(self, format='celsius', sensor=0):
+        """
+        Get device temperature reading.
+        """
+        results = self.get_temperatures(sensors=[sensor,])
+
         if format == 'celsius':
-            if len(temp_c) == 1:
-                return temp_c[0]
-            return temp_c
+            return results[sensor]['temperature_c']
         elif format == 'fahrenheit':
-            if len(temp_c) == 1:
-                return temp_c[0] * 1.8 + 32.0
-            return [x * 1.8 + 32.0 for x in temp_c]
+            return results[sensor]['temperature_f']
         elif format == 'millicelsius':
-            if len(temp_c) == 1:
-                return int(temp_c[0] * 1000)
-            return [int(x * 1000) for x in temp_c]
+            return results[sensor]['temperature_mc']
         else:
             raise ValueError("Unknown format")
+
+    def get_temperatures(self, sensors=None):
+        """
+        Get device temperature reading.
+
+        Params:
+        - sensors: optional list of sensors to get a reading for, examples:
+          [0,] - get reading for sensor 0
+          [0, 1,] - get reading for sensors 0 and 1
+          None - get readings for all sensors
+        """
+        _sensors = sensors
+        if _sensors is None:
+            _sensors = range(0, self._sensor_count)
+
+        if not set(_sensors).issubset(range(0, self._sensor_count)):
+            raise ValueError(
+                'Some or all of the sensors in the list %s are out of range '
+                'given a sensor_count of %d.  Valid range: %s' % (
+                    _sensors,
+                    self._sensor_count,
+                    range(0, self._sensor_count),
+                )
+            )
+
+        data = self.get_data()
+
+        results = {}
+
+        # Interpret device response
+        for sensor in _sensors:
+            offset = (sensor + 1) * 2
+            data_s = "".join([chr(byte) for byte in data])
+            value = (struct.unpack('>h', data_s[offset:(offset + 2)])[0])
+            celsius = value / 256.0
+            celsius = celsius * self._scale + self._offset
+            results[sensor] = {
+                'ports': self.get_ports(),
+                'bus': self.get_bus(),
+                'sensor': sensor,
+                'temperature_f': celsius * 1.8 + 32.0,
+                'temperature_c': celsius,
+                'temperature_mc': celsius * 1000,
+                'temperature_k': celsius + 273.15,
+            }
+
+        return results
 
     def _control_transfer(self, data):
         """
