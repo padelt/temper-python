@@ -135,21 +135,10 @@ class TemperDevice(object):
             return self._bus
         return ''
 
-    def get_temperature(self, format='celsius', sensor=0):
+    def get_data(self):
         """
-        Get device temperature reading.
+        Get data from the USB device.
         """
-        # Only supported sensors are 0 and 1 at this stage.
-        # If you have the 8 sensor model, please contribute to the 
-        # discussion here: https://github.com/padelt/temper-python/issues/19
-        if sensor not in [0, 1, "all"]:
-            raise ValueError('Only sensor 0 or 1, or the keyword "all" supported')
-       
-        if sensor == 0 or sensor == 1:
-            offsets = [(sensor + 1) * 2,]
-        elif sensor == "all":
-            offsets = [2, 4,]
-
         try:
             # Take control of device if required
             if self._device.is_kernel_driver_active:
@@ -195,6 +184,7 @@ class TemperDevice(object):
             # Be a nice citizen and undo potential interface claiming.
             # Also see: https://github.com/walac/pyusb/blob/master/docs/tutorial.rst#dont-be-selfish
             usb.util.dispose_resources(self._device)
+            return data
         except usb.USBError as err:
             # Catch the permissions exception and add our message
             if "not permitted" in str(err):
@@ -204,7 +194,24 @@ class TemperDevice(object):
             else:
                 LOGGER.error(err)
                 raise
-        
+
+    def get_temperature(self, format='celsius', sensor=0):
+        """
+        Get device temperature reading.
+        """
+        # Only supported sensors are 0 and 1 at this stage.
+        # If you have the 8 sensor model, please contribute to the
+        # discussion here: https://github.com/padelt/temper-python/issues/19
+        if sensor not in [0, 1, "all"]:
+            raise ValueError('Only sensor 0 or 1, or the keyword "all" supported')
+
+        if sensor == 0 or sensor == 1:
+            offsets = [(sensor + 1) * 2,]
+        elif sensor == "all":
+            offsets = [2, 4,]
+
+        data = self.get_data()
+
         # Interpret device response
         temp_c = []
         for offset in offsets:
