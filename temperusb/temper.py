@@ -80,13 +80,8 @@ class TemperDevice(object):
     A TEMPer USB thermometer.
     """
     def __init__(self, device, sensor_count=1):
-        # Currently this only supports 1 and 2 sensor models.
-        # If you have the 8 sensor model, please contribute to the
-        # discussion here: https://github.com/padelt/temper-python/issues/19
-        if sensor_count not in [1, 2,]:
-            raise ValueError('Only sensor_count of 1 or 2 supported')
+        self.set_sensor_count(sensor_count)
 
-        self._sensor_count = int(sensor_count)
         self._device = device
         self._bus = device.bus
         self._ports = getattr(device, 'port_number', None)
@@ -125,6 +120,20 @@ class TemperDevice(object):
                             self._offset = offset
         else:
             raise RuntimeError("Must set both scale and offset, or neither")
+
+    def set_sensor_count(self, count):
+        """
+        Set number of sensors on the device.
+
+        To do: revamp /etc/temper.conf file to include this data.
+        """
+        # Currently this only supports 1 and 2 sensor models.
+        # If you have the 8 sensor model, please contribute to the
+        # discussion here: https://github.com/padelt/temper-python/issues/19
+        if count not in [1, 2,]:
+            raise ValueError('Only sensor_count of 1 or 2 supported')
+
+        self._sensor_count = int(count)
 
     def get_ports(self):
         """
