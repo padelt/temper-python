@@ -1,6 +1,6 @@
 # encoding: utf-8
 from __future__ import print_function
-from temper import TemperHandler
+from temperusb.temper import TemperHandler
 import getopt, sys, os.path
 
 def usage():
@@ -49,7 +49,7 @@ def main():
             usage()
             sys.exit()
         else:
-            assert False, "unhandled option"
+            raise RuntimeError("Unhandled option '%s'" % o)
 
     if quiet_output and not degree_unit:
         print('You need to specify unit (-c of -f) when using -q option')

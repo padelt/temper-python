@@ -268,3 +268,4 @@ as seen on [Google+](https://plus.google.com/105569853186899442987/posts/N9T7xAj
 * Calibration code by Joji Monma (@GM3D on Github)
 * Munin plugin by Alexander Schier (@allo- on Github)
 * PyPI package work and rewrite to `libusb1` by James Stewart (@amorphic on Github)
+* Reduced kernel messages and more work by Philip Jay (@ps-jay on Github)

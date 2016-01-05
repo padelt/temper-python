@@ -12,7 +12,7 @@ import sys
 import syslog
 import threading
 import snmp_passpersist as snmp
-from temper import TemperHandler, TemperDevice
+from temperusb.temper import TemperHandler, TemperDevice
 
 ERROR_TEMPERATURE = 9999
 
@@ -68,9 +68,10 @@ class Updater():
         else:
             try:
                 with self.usb_lock:
-                    self.pp.add_int('318.1.1.1.2.2.2.0', int(max([d.get_temperature() for d in self.devs])))
-                    for i, dev in enumerate(self.devs[:3]): # use max. first 3 devices
-                        self.pp.add_int('9.9.13.1.3.1.3.%i' % (i+1), int(dev.get_temperature()))
+                    temperatures = [d.get_temperature() for d in self.devs]
+                    self.pp.add_int('318.1.1.1.2.2.2.0', int(max(temperatures)))
+                    for i, temperature in enumerate(temperatures[:3]): # use max. first 3 devices
+                        self.pp.add_int('9.9.13.1.3.1.3.%i' % (i+1), int(temperature))
             except Exception, e:
                 self.logger.write_log('Exception while updating data: %s' % str(e))
                 # Report an exceptionally large temperature to set off all alarms.

@@ -89,29 +89,35 @@ class TemperDevice(object):
         LOGGER.debug('Found device | Bus:{0} Ports:{1}'.format(
             self._bus, self._ports))
 
-    def set_calibration_data(self):
+    def set_calibration_data(self, scale=None, offset=None):
         """
         Set device calibration data based on settings in /etc/temper.conf.
         """
-        self._scale = 1.0
-        self._offset = 0.0
-        try:
-            f = open('/etc/temper.conf', 'r')
-        except IOError:
-            f = None
-        if f:
-            lines = f.read().split('\n')
-            f.close()
-            for line in lines:
-                matches = re.match(CALIB_LINE_STR, line)
-                if matches:
-                    bus = int(matches.groups()[0])
-                    ports = matches.groups()[1]
-                    scale = float(matches.groups()[2])
-                    offset = float(matches.groups()[3])
-                    if ports == self._ports:
-                        self._scale = scale
-                        self._offset = offset
+        if scale is not None and offset is not None:
+            self._scale = scale
+            self._offset = offset
+        elif scale is None and offset is None:
+            self._scale = 1.0
+            self._offset = 0.0
+            try:
+                f = open('/etc/temper.conf', 'r')
+            except IOError:
+                f = None
+            if f:
+                lines = f.read().split('\n')
+                f.close()
+                for line in lines:
+                    matches = re.match(CALIB_LINE_STR, line)
+                    if matches:
+                        bus = int(matches.groups()[0])
+                        ports = matches.groups()[1]
+                        scale = float(matches.groups()[2])
+                        offset = float(matches.groups()[3])
+                        if str(ports) == str(self._ports):
+                            self._scale = scale
+                            self._offset = offset
+        else:
+            raise RuntimeError("Must set both scale and offset, or neither")
 
     def get_ports(self):
         """
@@ -155,20 +161,40 @@ class TemperDevice(object):
                     except usb.USBError as err:
                         LOGGER.debug(err)
                 self._device.set_configuration()
-                self._device.ctrl_transfer(bmRequestType=0x21, bRequest=0x09,
-                    wValue=0x0201, wIndex=0x00, data_or_wLength='\x01\x01',
-                    timeout=TIMEOUT)
+                # Prevent kernel message:
+                # "usbfs: process <PID> (python) did not claim interface x before use"
+                for interface in [0, 1]:
+                    usb.util.claim_interface(self._device, interface)
+                    usb.util.claim_interface(self._device, interface)
+
+                # Turns out we don't actually need that ctrl_transfer.
+                # Disabling this reduces number of USBErrors from ~7/30 to 0!
+                #self._device.ctrl_transfer(bmRequestType=0x21, bRequest=0x09,
+                #    wValue=0x0201, wIndex=0x00, data_or_wLength='\x01\x01',
+                #    timeout=TIMEOUT)
+
+
+            # Turns out a whole lot of that magic seems unnecessary.
+            #self._control_transfer(COMMANDS['temp'])
+            #self._interrupt_read()
+            #self._control_transfer(COMMANDS['ini1'])
+            #self._interrupt_read()
+            #self._control_transfer(COMMANDS['ini2'])
+            #self._interrupt_read()
+            #self._interrupt_read()
+
             # Get temperature
             self._control_transfer(COMMANDS['temp'])
-            self._interrupt_read()
-            self._control_transfer(COMMANDS['ini1'])
-            self._interrupt_read()
-            self._control_transfer(COMMANDS['ini2'])
-            self._interrupt_read()
-            self._interrupt_read()
-            self._control_transfer(COMMANDS['temp'])
             data = self._interrupt_read()
-            self._device.reset()
+
+            # Seems unneccessary to reset each time
+            # Also ends up hitting syslog with this kernel message each time:
+            # "reset low speed USB device number x using uhci_hcd"
+            # self._device.reset()
+
+            # Be a nice citizen and undo potential interface claiming.
+            # Also see: https://github.com/walac/pyusb/blob/master/docs/tutorial.rst#dont-be-selfish
+            usb.util.dispose_resources(self._device)
         except usb.USBError as err:
             # Catch the permissions exception and add our message
             if "not permitted" in str(err):
@@ -184,7 +210,7 @@ class TemperDevice(object):
         for offset in offsets:
             data_s = "".join([chr(byte) for byte in data])
             value = (struct.unpack('>h', data_s[offset:(offset + 2)])[0])
-            temp_c.append((125.0 / 32000.0) * value)
+            temp_c.append(value / 256.0)
             temp_c[-1] = temp_c[-1] * self._scale + self._offset
 
         # Return the result or results
@@ -216,9 +242,13 @@ class TemperDevice(object):
         """
         Read data from device.
         """
-        data = self._device.read(ENDPOINT, REQ_INT_LEN, interface=INTERFACE, timeout=TIMEOUT)
+        data = self._device.read(ENDPOINT, REQ_INT_LEN, timeout=TIMEOUT)
         LOGGER.debug('Read data: {0}'.format(data))
         return data
+
+    def close(self):
+        """Does nothing in this device. Other device types may need to do cleanup here."""
+        pass
 
 
 class TemperHandler(object):
