@@ -79,7 +79,14 @@ class TemperDevice(object):
     """
     A TEMPer USB thermometer.
     """
-    def __init__(self, device):
+    def __init__(self, device, sensor_count=1):
+        # Currently this only supports 1 and 2 sensor models.
+        # If you have the 8 sensor model, please contribute to the
+        # discussion here: https://github.com/padelt/temper-python/issues/19
+        if sensor_count not in [1, 2,]:
+            raise ValueError('Only sensor_count of 1 or 2 supported')
+
+        self._sensor_count = int(sensor_count)
         self._device = device
         self._bus = device.bus
         self._ports = getattr(device, 'port_number', None)
