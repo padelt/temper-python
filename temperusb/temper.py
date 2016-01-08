@@ -160,21 +160,22 @@ class TemperDevice(object):
             if reset_device:
                 self._device.reset()
 
-            # Take control of device if required
-            if self._device.is_kernel_driver_active:
-                LOGGER.debug('Taking control of device on bus {0} ports '
-                    '{1}'.format(self._bus, self._ports))
-                for interface in [0, 1]:
-                    try:
-                        self._device.detach_kernel_driver(interface)
-                    except usb.USBError as err:
-                        LOGGER.debug(err)
-                self._device.set_configuration()
-                # Prevent kernel message:
-                # "usbfs: process <PID> (python) did not claim interface x before use"
-                for interface in [0, 1]:
-                    usb.util.claim_interface(self._device, interface)
-                    usb.util.claim_interface(self._device, interface)
+            # detach kernel driver from both interfaces if attached, so we can set_configuration()
+            for interface in [0,1]:
+                if self._device.is_kernel_driver_active(interface):
+                    LOGGER.debug('Detaching kernel driver for interface %d '
+                        'of %r on ports %r', interface, self._device, self._ports)
+                    self._device.detach_kernel_driver(interface)
+
+            self._device.set_configuration()
+
+            # Prevent kernel message:
+            # "usbfs: process <PID> (python) did not claim interface x before use"
+            # This will become unnecessary once pull-request #124 for
+            # PyUSB has been accepted and we depend on a fixed release
+            # of PyUSB.  Until then, and even with the fix applied, it
+            # does not hurt to explicitly claim the interface.
+            usb.util.claim_interface(self._device, INTERFACE)
 
                 # Turns out we don't actually need that ctrl_transfer.
                 # Disabling this reduces number of USBErrors from ~7/30 to 0!
