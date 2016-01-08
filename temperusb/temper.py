@@ -152,11 +152,14 @@ class TemperDevice(object):
             return self._bus
         return ''
 
-    def get_data(self):
+    def get_data(self, reset_device=False):
         """
         Get data from the USB device.
         """
         try:
+            if reset_device:
+                self._device.reset()
+
             # Take control of device if required
             if self._device.is_kernel_driver_active:
                 LOGGER.debug('Taking control of device on bus {0} ports '
@@ -193,16 +196,15 @@ class TemperDevice(object):
             self._control_transfer(COMMANDS['temp'])
             data = self._interrupt_read()
 
-            # Seems unneccessary to reset each time
-            # Also ends up hitting syslog with this kernel message each time:
-            # "reset low speed USB device number x using uhci_hcd"
-            # self._device.reset()
-
             # Be a nice citizen and undo potential interface claiming.
             # Also see: https://github.com/walac/pyusb/blob/master/docs/tutorial.rst#dont-be-selfish
             usb.util.dispose_resources(self._device)
             return data
         except usb.USBError as err:
+            if not reset_device:
+                LOGGER.warning("Encountered %s, resetting %r and trying again.", err, self._device)
+                return self.get_data(True)
+
             # Catch the permissions exception and add our message
             if "not permitted" in str(err):
                 raise Exception(
