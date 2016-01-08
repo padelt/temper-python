@@ -1,6 +1,7 @@
 # encoding: utf-8
 from __future__ import print_function, absolute_import
 import argparse
+import logging
 
 from .temper import TemperHandler
 
@@ -35,6 +36,8 @@ def parse_args():
 def main():
     args = parse_args()
     quiet = args.celsius or args.fahrenheit
+
+    logging.basicConfig(level = logging.ERROR if quiet else logging.WARNING)
 
     th = TemperHandler()
     devs = th.get_devices()
