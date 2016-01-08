@@ -282,7 +282,7 @@ class TemperDevice(object):
         Send device a control request with standard parameters and <data> as
         payload.
         """
-        LOGGER.debug('Ctrl transfer: {0}'.format(data))
+        LOGGER.debug('Ctrl transfer: %r', data)
         self._device.ctrl_transfer(bmRequestType=0x21, bRequest=0x09,
             wValue=0x0200, wIndex=0x01, data_or_wLength=data, timeout=TIMEOUT)
 
@@ -291,7 +291,7 @@ class TemperDevice(object):
         Read data from device.
         """
         data = self._device.read(ENDPOINT, REQ_INT_LEN, timeout=TIMEOUT)
-        LOGGER.debug('Read data: {0}'.format(data))
+        LOGGER.debug('Read data: %r', data)
         return data
 
     def close(self):
