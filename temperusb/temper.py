@@ -184,9 +184,13 @@ class TemperDevice(object):
                 #    timeout=TIMEOUT)
 
 
+            # Magic: Our TEMPerV1.4 likes to be asked twice.  When
+            # only asked once, it get's stuck on the next access and
+            # requires a reset.
+            self._control_transfer(COMMANDS['temp'])
+            self._interrupt_read()
+
             # Turns out a whole lot of that magic seems unnecessary.
-            #self._control_transfer(COMMANDS['temp'])
-            #self._interrupt_read()
             #self._control_transfer(COMMANDS['ini1'])
             #self._interrupt_read()
             #self._control_transfer(COMMANDS['ini2'])
