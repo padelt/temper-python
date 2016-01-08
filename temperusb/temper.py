@@ -9,8 +9,6 @@
 # details.
 
 import usb
-import sys
-import struct
 import os
 import re
 import logging
@@ -33,7 +31,6 @@ COMMANDS = {
     'ini2': b'\x01\x86\xff\x01\x00\x00\x00\x00',
 }
 LOGGER = logging.getLogger(__name__)
-IS_PY2 = sys.version[0] == '2'
 
 
 def readattr(path, name):
@@ -265,12 +262,7 @@ class TemperDevice(object):
         # Interpret device response
         for sensor in _sensors:
             offset = (sensor + 1) * 2
-            if IS_PY2:
-                data_s = b"".join([chr(byte) for byte in data])
-            else:
-                data_s = data.tobytes()
-            value = (struct.unpack('>h', data_s[offset:(offset + 2)])[0])
-            celsius = value / 256.0
+            celsius = data[offset] + data[offset+1] / 256.0
             celsius = celsius * self._scale + self._offset
             results[sensor] = {
                 'ports': self.get_ports(),
