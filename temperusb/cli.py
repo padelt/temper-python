@@ -24,8 +24,11 @@ def parse_args():
                         default='1')
     args = parser.parse_args()
 
-    args.sensor_ids = list(range(args.sensor_count)) if args.sensor_ids == 'all' \
-        else [int(args.sensor_ids)]
+    if args.sensor_ids == 'all':
+        args.sensor_ids = range(args.sensor_count)
+    else:
+        args.sensor_ids = [int(args.sensor_ids)]
+
     return args
 
 
