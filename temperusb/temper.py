@@ -16,7 +16,7 @@ import re
 import logging
 
 VIDPIDS = [
-    (0x0c45L, 0x7401L),
+    (0x0c45, 0x7401),
 ]
 REQ_INT_LEN = 8
 ENDPOINT = 0x82
@@ -28,11 +28,12 @@ CALIB_LINE_STR = USB_PORTS_STR +\
     '\s*:\s*scale\s*=\s*([+|-]?\d*\.\d+)\s*,\s*offset\s*=\s*([+|-]?\d*\.\d+)'
 USB_SYS_PREFIX = '/sys/bus/usb/devices/'
 COMMANDS = {
-    'temp': '\x01\x80\x33\x01\x00\x00\x00\x00',
-    'ini1': '\x01\x82\x77\x01\x00\x00\x00\x00',
-    'ini2': '\x01\x86\xff\x01\x00\x00\x00\x00',
+    'temp': b'\x01\x80\x33\x01\x00\x00\x00\x00',
+    'ini1': b'\x01\x82\x77\x01\x00\x00\x00\x00',
+    'ini2': b'\x01\x86\xff\x01\x00\x00\x00\x00',
 }
 LOGGER = logging.getLogger(__name__)
+IS_PY2 = sys.version[0] == '2'
 
 
 def readattr(path, name):
@@ -141,7 +142,7 @@ class TemperDevice(object):
         """
         if self._ports:
             return self._ports
-        return '' 
+        return ''
 
     def get_bus(self):
         """
@@ -238,15 +239,15 @@ class TemperDevice(object):
         """
         _sensors = sensors
         if _sensors is None:
-            _sensors = range(0, self._sensor_count)
+            _sensors = list(range(0, self._sensor_count))
 
-        if not set(_sensors).issubset(range(0, self._sensor_count)):
+        if not set(_sensors).issubset(list(range(0, self._sensor_count))):
             raise ValueError(
                 'Some or all of the sensors in the list %s are out of range '
                 'given a sensor_count of %d.  Valid range: %s' % (
                     _sensors,
                     self._sensor_count,
-                    range(0, self._sensor_count),
+                    list(range(0, self._sensor_count)),
                 )
             )
 
@@ -257,7 +258,10 @@ class TemperDevice(object):
         # Interpret device response
         for sensor in _sensors:
             offset = (sensor + 1) * 2
-            data_s = "".join([chr(byte) for byte in data])
+            if IS_PY2:
+                data_s = b"".join([chr(byte) for byte in data])
+            else:
+                data_s = data.tobytes()
             value = (struct.unpack('>h', data_s[offset:(offset + 2)])[0])
             celsius = value / 256.0
             celsius = celsius * self._scale + self._offset
@@ -305,7 +309,7 @@ class TemperHandler(object):
         for vid, pid in VIDPIDS:
             self._devices += [TemperDevice(device) for device in \
                 usb.core.find(find_all=True, idVendor=vid, idProduct=pid)]
-	LOGGER.info('Found {0} TEMPer devices'.format(len(self._devices)))
+        LOGGER.info('Found {0} TEMPer devices'.format(len(self._devices)))
 
     def get_devices(self):
         """

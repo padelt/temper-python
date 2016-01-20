@@ -43,7 +43,7 @@ class Updater():
                 self.logger.write_log('Found %i thermometer devices.' % len(self.devs))
                 for i, d in enumerate(self.devs):
                     self.logger.write_log('Initial temperature of device #%i: %0.1f degree celsius' % (i, d.get_temperature()))
-            except Exception, e:
+            except Exception as e:
                 self.logger.write_log('Exception while initializing: %s' % str(e))
 
     def _reinitialize(self):
@@ -53,7 +53,7 @@ class Updater():
             for i,d in enumerate(self.devs):
                 try:
                     d.close()
-                except Exception, e:
+                except Exception as e:
                     self.logger.write_log('Exception closing device #%i: %s' % (i, str(e))) 
         self._initialize()
 
@@ -72,7 +72,7 @@ class Updater():
                     self.pp.add_int('318.1.1.1.2.2.2.0', int(max(temperatures)))
                     for i, temperature in enumerate(temperatures[:3]): # use max. first 3 devices
                         self.pp.add_int('9.9.13.1.3.1.3.%i' % (i+1), int(temperature))
-            except Exception, e:
+            except Exception as e:
                 self.logger.write_log('Exception while updating data: %s' % str(e))
                 # Report an exceptionally large temperature to set off all alarms.
                 # snmp_passpersist does not expose an API to remove an OID.
