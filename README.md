@@ -274,3 +274,4 @@ The `snmp_passpersist` mode is Python 2 only because the upstream package is not
 * Munin plugin by Alexander Schier (@allo- on Github)
 * PyPI package work and rewrite to `libusb1` by James Stewart (@amorphic on Github)
 * Reduced kernel messages and support multiple sensors by Philip Jay (@ps-jay on Github)
+* Python 3 compatibility and rewrite of cli.py to use argparse by Will Furnass (@willfurnass on Github)
