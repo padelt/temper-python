@@ -261,6 +261,11 @@ To find out bus and port numbers, you can also try running temper-poll with -p o
 The USB interaction pattern is extracted from [here](http://www.isp-sl.com/pcsensor-1.0.0.tgz)
 as seen on [Google+](https://plus.google.com/105569853186899442987/posts/N9T7xAjEtyF).
 
+# Compatibility with Python versions
+
+This should work on both Python 2 and 3. It was tested with Python 2.7.3 and 3.2.3.
+The `snmp_passpersist` mode is Python 2 only because the upstream package is not ready yet.
+
 # Authors
 
 * Original rewrite by Philipp Adelt <autosort-github@philipp.adelt.net>

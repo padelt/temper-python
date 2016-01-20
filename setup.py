@@ -5,7 +5,7 @@ setup(
     author='Philipp Adelt',
     author_email='autosort-github@philipp.adelt.net ',
     url='https://github.com/padelt/temper-python',
-    version='1.3.1',
+    version='1.4.0',
     description='Reads temperature from TEMPerV1 devices (USB 0c45:7401)',
     long_description=open('README.md').read(),
     packages=['temperusb'],
@@ -18,5 +18,12 @@ setup(
             'temper-poll = temperusb.cli:main',
             'temper-snmp = temperusb.snmp:main'
         ]
-    }
+    },
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Console',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
+    ],
 )
