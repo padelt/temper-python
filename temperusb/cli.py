@@ -63,8 +63,7 @@ def main():
             tempinfo = ''
             for sensor in sorted(reading):
                 if args.disp_ports and portinfo == '':
-                    portinfo = " (bus %s - port %s)" % (reading['bus'],
-                                                        reading['ports'])
+                    portinfo = " (bus %(bus)s - port %(ports)s)" % reading[sensor]
                 tempinfo += '%0.1f°C %0.1f°F; ' % (
                     reading[sensor]['temperature_c'],
                     reading[sensor]['temperature_f'],
