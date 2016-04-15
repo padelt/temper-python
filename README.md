@@ -14,12 +14,7 @@ via SNMP.
 | `0c45:7401 Microdia`                           | `RDing TEMPerV1.2`       | First supported device  |
 | `0c45:7401 Microdia TEMPer Temperature Sensor` | `RDing TEMPer2_M12_V1.3` | Two sensor device       |
 | `0c45:7401 Microdia`                           | `RDing TEMPer1F_V1.3`    | Single external sensor, but better precision is possible by using "sensor 2" |
-
-### Future support likely
-
-| USB ID                                         | Name Reported            | Notes                   |
-| ---------------------------------------------- | ------------------------ | ----------------------- |
-| `0c45:7401 Microdia`                           | `RDing TEMPerV1.4`       | See PR #43              |
+| `0c45:7401 Microdia`                           | `RDing TEMPerV1.4`       |                         |
 
 # Requirements
 
