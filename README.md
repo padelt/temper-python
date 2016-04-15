@@ -3,11 +3,23 @@ a USB ID like this: `0c45:7401 Microdia`
 My device came from [M-Ware ID7747](http://www.m-ware.de/m-ware-usb-thermometer-40--120-c-emailbenachrichtigung-id7747/a-7747/)
 and also reports itself as 'RDing TEMPerV1.2'.
 
-The code also works for devices reporting as 'RDing TEMPer1F_V1.3'.  These devices seem to only support temperature readings from the remote probe, where as the TEMPerV1.2 can read from the internal device, and the external probe.
-
 Also provides a passpersist-module for NetSNMP (as found in the `snmpd`
 packages of Debian and Ubuntu) to present the temperature of 1-3 USB devices
 via SNMP.
+
+### Reported working devices
+
+| USB ID                                         | Name Reported            | Notes                   |
+| ---------------------------------------------- | ------------------------ | ----------------------- |
+| `0c45:7401 Microdia`                           | `RDing TEMPerV1.2`       | First supported device  |
+| `0c45:7401 Microdia TEMPer Temperature Sensor` | `RDing TEMPer2_M12_V1.3` | Two sensor device       |
+| `0c45:7401 Microdia`                           | `RDing TEMPer1F_V1.3`    | Single external sensor, but better precision is possible by using "sensor 2" |
+
+### Future support likely
+
+| USB ID                                         | Name Reported            | Notes                   |
+| ---------------------------------------------- | ------------------------ | ----------------------- |
+| `0c45:7401 Microdia`                           | `RDing TEMPerV1.4`       | See PR #43              |
 
 # Requirements
 
