@@ -20,15 +20,9 @@ def parse_args():
     parser.add_argument("-s", "--sensor_ids", choices=['0', '1', 'all'],
                         help="IDs of sensors to use on the device " +
                         "(multisensor devices only)", default='0')
-    parser.add_argument("-S", "--sensor_count", choices=[1, 2], type=int,
-                        help="Specify the number of sensors on the device",
-                        default='1')
+    parser.add_argument("-S", "--sensor_count", type=int,
+                        help="Override auto-detected number of sensors on the device")
     args = parser.parse_args()
-
-    if args.sensor_ids == 'all':
-        args.sensor_ids = range(args.sensor_count)
-    else:
-        args.sensor_ids = [int(args.sensor_ids)]
 
     return args
 
@@ -47,7 +41,15 @@ def main():
     readings = []
 
     for dev in devs:
-        dev.set_sensor_count(args.sensor_count)
+        if args.sensor_count is not None:
+            # Override auto-detection from args
+            dev.set_sensor_count(int(args.sensor_count))
+
+        if args.sensor_ids == 'all':
+            args.sensor_ids = range(dev.get_sensor_count())
+        else:
+            args.sensor_ids = [int(args.sensor_ids)]
+
         readings.append(dev.get_temperatures(sensors=args.sensor_ids))
 
     for i, reading in enumerate(readings):
