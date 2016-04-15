@@ -5,7 +5,7 @@ setup(
     author='Philipp Adelt',
     author_email='autosort-github@philipp.adelt.net ',
     url='https://github.com/padelt/temper-python',
-    version='1.4.1',
+    version='1.5.0',
     description='Reads temperature from TEMPerV1 devices (USB 0c45:7401)',
     long_description=open('README.md').read(),
     packages=['temperusb'],
