@@ -9,8 +9,6 @@
 # details.
 
 import usb
-import sys
-import struct
 import os
 import re
 import logging
@@ -33,7 +31,6 @@ COMMANDS = {
     'ini2': b'\x01\x86\xff\x01\x00\x00\x00\x00',
 }
 LOGGER = logging.getLogger(__name__)
-IS_PY2 = sys.version[0] == '2'
 
 
 def readattr(path, name):
@@ -152,26 +149,30 @@ class TemperDevice(object):
             return self._bus
         return ''
 
-    def get_data(self):
+    def get_data(self, reset_device=False):
         """
         Get data from the USB device.
         """
         try:
-            # Take control of device if required
-            if self._device.is_kernel_driver_active:
-                LOGGER.debug('Taking control of device on bus {0} ports '
-                    '{1}'.format(self._bus, self._ports))
-                for interface in [0, 1]:
-                    try:
-                        self._device.detach_kernel_driver(interface)
-                    except usb.USBError as err:
-                        LOGGER.debug(err)
-                self._device.set_configuration()
-                # Prevent kernel message:
-                # "usbfs: process <PID> (python) did not claim interface x before use"
-                for interface in [0, 1]:
-                    usb.util.claim_interface(self._device, interface)
-                    usb.util.claim_interface(self._device, interface)
+            if reset_device:
+                self._device.reset()
+
+            # detach kernel driver from both interfaces if attached, so we can set_configuration()
+            for interface in [0,1]:
+                if self._device.is_kernel_driver_active(interface):
+                    LOGGER.debug('Detaching kernel driver for interface %d '
+                        'of %r on ports %r', interface, self._device, self._ports)
+                    self._device.detach_kernel_driver(interface)
+
+            self._device.set_configuration()
+
+            # Prevent kernel message:
+            # "usbfs: process <PID> (python) did not claim interface x before use"
+            # This will become unnecessary once pull-request #124 for
+            # PyUSB has been accepted and we depend on a fixed release
+            # of PyUSB.  Until then, and even with the fix applied, it
+            # does not hurt to explicitly claim the interface.
+            usb.util.claim_interface(self._device, INTERFACE)
 
                 # Turns out we don't actually need that ctrl_transfer.
                 # Disabling this reduces number of USBErrors from ~7/30 to 0!
@@ -180,9 +181,13 @@ class TemperDevice(object):
                 #    timeout=TIMEOUT)
 
 
+            # Magic: Our TEMPerV1.4 likes to be asked twice.  When
+            # only asked once, it get's stuck on the next access and
+            # requires a reset.
+            self._control_transfer(COMMANDS['temp'])
+            self._interrupt_read()
+
             # Turns out a whole lot of that magic seems unnecessary.
-            #self._control_transfer(COMMANDS['temp'])
-            #self._interrupt_read()
             #self._control_transfer(COMMANDS['ini1'])
             #self._interrupt_read()
             #self._control_transfer(COMMANDS['ini2'])
@@ -193,16 +198,15 @@ class TemperDevice(object):
             self._control_transfer(COMMANDS['temp'])
             data = self._interrupt_read()
 
-            # Seems unneccessary to reset each time
-            # Also ends up hitting syslog with this kernel message each time:
-            # "reset low speed USB device number x using uhci_hcd"
-            # self._device.reset()
-
             # Be a nice citizen and undo potential interface claiming.
             # Also see: https://github.com/walac/pyusb/blob/master/docs/tutorial.rst#dont-be-selfish
             usb.util.dispose_resources(self._device)
             return data
         except usb.USBError as err:
+            if not reset_device:
+                LOGGER.warning("Encountered %s, resetting %r and trying again.", err, self._device)
+                return self.get_data(True)
+
             # Catch the permissions exception and add our message
             if "not permitted" in str(err):
                 raise Exception(
@@ -258,12 +262,7 @@ class TemperDevice(object):
         # Interpret device response
         for sensor in _sensors:
             offset = (sensor + 1) * 2
-            if IS_PY2:
-                data_s = b"".join([chr(byte) for byte in data])
-            else:
-                data_s = data.tobytes()
-            value = (struct.unpack('>h', data_s[offset:(offset + 2)])[0])
-            celsius = value / 256.0
+            celsius = data[offset] + data[offset+1] / 256.0
             celsius = celsius * self._scale + self._offset
             results[sensor] = {
                 'ports': self.get_ports(),
@@ -282,7 +281,7 @@ class TemperDevice(object):
         Send device a control request with standard parameters and <data> as
         payload.
         """
-        LOGGER.debug('Ctrl transfer: {0}'.format(data))
+        LOGGER.debug('Ctrl transfer: %r', data)
         self._device.ctrl_transfer(bmRequestType=0x21, bRequest=0x09,
             wValue=0x0200, wIndex=0x01, data_or_wLength=data, timeout=TIMEOUT)
 
@@ -291,7 +290,7 @@ class TemperDevice(object):
         Read data from device.
         """
         data = self._device.read(ENDPOINT, REQ_INT_LEN, timeout=TIMEOUT)
-        LOGGER.debug('Read data: {0}'.format(data))
+        LOGGER.debug('Read data: %r', data)
         return data
 
     def close(self):
