@@ -5,6 +5,6 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [1.5.0] - 2016-04-20
+## [1.5.0] - 2016-04-20 - Commit ID: 8752b14
 ## Added
 - Changelog file. 
