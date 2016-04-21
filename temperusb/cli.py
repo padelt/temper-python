@@ -46,11 +46,11 @@ def main():
             dev.set_sensor_count(int(args.sensor_count))
 
         if args.sensor_ids == 'all':
-            args.sensor_ids = range(dev.get_sensor_count())
+            sensors = range(dev.get_sensor_count())
         else:
-            args.sensor_ids = [int(args.sensor_ids)]
+            sensors = [int(args.sensor_ids)]
 
-        readings.append(dev.get_temperatures(sensors=args.sensor_ids))
+        readings.append(dev.get_temperatures(sensors=sensors))
 
     for i, reading in enumerate(readings):
         output = ''
