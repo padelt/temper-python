@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [1.5.1] - 2016-06-12
+## [1.5.1] - 2016-06-12 - Commit ID: ceb0617
 ### Added
 - Support for `TEMPer1F_V1.3`'s behaviour: Only one sensor, data is at offset 4 from ps-jay.
 
