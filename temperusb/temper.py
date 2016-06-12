@@ -86,6 +86,7 @@ class TemperDevice(object):
         if self._ports == None:
             self._ports = find_ports(device)
         self.set_calibration_data()
+        self.set_sensor_count(self.lookup_sensor_count())
         LOGGER.debug('Found device | Bus:{0} Ports:{1}'.format(
             self._bus, self._ports))
 
@@ -119,6 +120,35 @@ class TemperDevice(object):
         else:
             raise RuntimeError("Must set both scale and offset, or neither")
 
+    def lookup_offset(self, sensor):
+        """
+        Lookup the number of sensors on the device by product name.
+        """
+        if self._device.product == 'TEMPer1F_V1.3':
+            # Has only 1 sensor, and it's at offset = 4
+            return 4
+
+        # All others follow this pattern - if not, contribute here: https://github.com/padelt/temper-python/issues
+        # Sensor 0 = Offset 2
+        # Sensor 1 = Offset 4
+        return (sensor + 1) * 2
+
+    def lookup_sensor_count(self):
+        """
+        Lookup the number of sensors on the device by product name.
+        """
+        if self._device.product == 'TEMPer1F_V1.3':
+            return 1
+
+        # All others are two - if not the case, contribute here: https://github.com/padelt/temper-python/issues
+        return 2
+
+    def get_sensor_count(self):
+        """
+        Get number of sensors on the device.
+        """
+        return self._sensor_count
+
     def set_sensor_count(self, count):
         """
         Set number of sensors on the device.
@@ -127,7 +157,7 @@ class TemperDevice(object):
         """
         # Currently this only supports 1 and 2 sensor models.
         # If you have the 8 sensor model, please contribute to the
-        # discussion here: https://github.com/padelt/temper-python/issues/19
+        # discussion here: https://github.com/padelt/temper-python/issues
         if count not in [1, 2,]:
             raise ValueError('Only sensor_count of 1 or 2 supported')
 
@@ -261,7 +291,7 @@ class TemperDevice(object):
 
         # Interpret device response
         for sensor in _sensors:
-            offset = (sensor + 1) * 2
+            offset = self.lookup_offset(sensor)
             celsius = data[offset] + data[offset+1] / 256.0
             celsius = celsius * self._scale + self._offset
             results[sensor] = {
