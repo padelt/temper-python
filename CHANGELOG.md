@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 * This project follows the guidelines outlined on [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
+
+## [1.5.1] - 2016-06-12
 ### Added
 - Support for `TEMPer1F_V1.3`'s behaviour: Only one sensor, data is at offset 4 from ps-jay.
 
