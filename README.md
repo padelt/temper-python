@@ -27,7 +27,7 @@ Under Debian/Ubuntu, treat yourself to some package goodness:
 
 # Installation and usage
 
-After you run
+Clone the repository, cd into its top-level directory, and run
 
     sudo python setup.py install
 
