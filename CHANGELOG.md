@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 * This project follows the guidelines outlined on [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
+
+## [1.5.2] - 2016-09-07
 ### Fixed
 - Clarification of install documentation from eric-s-raymond.
 - Workaround for misleading error message when at least one TEMPer USB device node has insufficient permissions. (#63)
