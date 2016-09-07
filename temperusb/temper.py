@@ -86,6 +86,18 @@ class TemperDevice(object):
         if self._ports == None:
             self._ports = find_ports(device)
         self.set_calibration_data()
+        try:
+            # Try to trigger a USB permission issue early so the
+            # user is not presented with seemingly unrelated error message.
+            # https://github.com/padelt/temper-python/issues/63
+            self.lookup_sensor_count()
+        except ValueError, e:
+            if 'langid' in e.message:
+                raise usb.core.USBError("Error reading langids from device. "+
+                "This might be a permission issue. Please check that the device "+
+                "node for your TEMPer devices can be read and written by the "+
+                "user running this code. The temperusb README.md contains hints "+
+                "about how to fix this. Search for 'USB device permissions'.")
         self.set_sensor_count(self.lookup_sensor_count())
         LOGGER.debug('Found device | Bus:{0} Ports:{1}'.format(
             self._bus, self._ports))

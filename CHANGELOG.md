@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 ### Fixed
 - Clarification of install documentation from eric-s-raymond.
+- Workaround for misleading error message when at least one TEMPer USB device node has insufficient permissions. (#63)
 
 ## [1.5.1] - 2016-06-12 - Commit ID: ceb0617
 ### Added
