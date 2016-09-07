@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 * This project follows the guidelines outlined on [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
+### Fixed
+- Clarification of install documentation from eric-s-raymond.
 
 ## [1.5.1] - 2016-06-12 - Commit ID: ceb0617
 ### Added
