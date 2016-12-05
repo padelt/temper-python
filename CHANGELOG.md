@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 * This project follows the guidelines outlined on [keepachangelog.com](http://keepachangelog.com/).
 
 ## [Unreleased]
+### Added
+- Hints for local development
 
 ## [1.5.2] - 2016-09-07
 ### Fixed
