@@ -15,6 +15,7 @@ import logging
 
 VIDPIDS = [
     (0x0c45, 0x7401),
+    (0x0c45, 0x7402),
 ]
 REQ_INT_LEN = 8
 ENDPOINT = 0x82
@@ -149,7 +150,8 @@ class TemperDevice(object):
         """
         Lookup the number of sensors on the device by product name.
         """
-        if self._device.product == 'TEMPer1F_V1.3':
+        if (self._device.product == 'TEMPer1F_V1.3') or \
+            (self._device.product == 'TEMPer1F_H1_V1.4'):
             return 1
 
         # All others are two - if not the case, contribute here: https://github.com/padelt/temper-python/issues
