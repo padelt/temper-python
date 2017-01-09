@@ -12,6 +12,7 @@ import usb
 import os
 import re
 import logging
+import struct
 
 VIDPIDS = [
     (0x0c45, 0x7401),
@@ -304,7 +305,8 @@ class TemperDevice(object):
         # Interpret device response
         for sensor in _sensors:
             offset = self.lookup_offset(sensor)
-            celsius = data[offset] + data[offset+1] / 256.0
+            celsius = struct.unpack_from('>h', data, offset)[0] / 256.0
+            # Apply scaling and offset (if any)
             celsius = celsius * self._scale + self._offset
             results[sensor] = {
                 'ports': self.get_ports(),
