@@ -12,6 +12,7 @@ import usb
 import os
 import re
 import logging
+import struct
 
 VIDPIDS = [
     (0x0c45, 0x7401),
@@ -146,6 +147,16 @@ class TemperDevice(object):
         # Sensor 1 = Offset 4
         return (sensor + 1) * 2
 
+    def lookup_humidity_offset(self, sensor):
+        """
+        Lookup the offset of the humidity data by product name.
+        """
+        if self._device.product == 'TEMPer1F_H1_V1.4':
+            # Has only 1 sensor, and the humidity data is at offset = 4
+            return 4
+
+        return None
+
     def lookup_sensor_count(self):
         """
         Lookup the number of sensors on the device by product name.
@@ -240,7 +251,16 @@ class TemperDevice(object):
 
             # Get temperature
             self._control_transfer(COMMANDS['temp'])
-            data = self._interrupt_read()
+            temp_data = self._interrupt_read()
+
+            # Get humidity
+            if self._device.product == 'TEMPer1F_H1_V1.4':
+                humidity_data = temp_data
+            else:
+                humidity_data = None
+
+            # Combine temperature and humidity data
+            data = {'temp_data': temp_data, 'humidity_data': humidity_data}
 
             # Be a nice citizen and undo potential interface claiming.
             # Also see: https://github.com/walac/pyusb/blob/master/docs/tutorial.rst#dont-be-selfish
@@ -300,6 +320,7 @@ class TemperDevice(object):
             )
 
         data = self.get_data()
+        data = data['temp_data']
 
         results = {}
 
@@ -316,6 +337,50 @@ class TemperDevice(object):
                 'temperature_c': celsius,
                 'temperature_mc': celsius * 1000,
                 'temperature_k': celsius + 273.15,
+            }
+
+        return results
+
+    def get_humidity(self, sensors=None):
+        """
+        Get device humidity reading.
+
+        Params:
+        - sensors: optional list of sensors to get a reading for, examples:
+          [0,] - get reading for sensor 0
+          [0, 1,] - get reading for sensors 0 and 1
+          None - get readings for all sensors
+        """
+        _sensors = sensors
+        if _sensors is None:
+            _sensors = list(range(0, self._sensor_count))
+
+        if not set(_sensors).issubset(list(range(0, self._sensor_count))):
+            raise ValueError(
+                'Some or all of the sensors in the list %s are out of range '
+                'given a sensor_count of %d.  Valid range: %s' % (
+                    _sensors,
+                    self._sensor_count,
+                    list(range(0, self._sensor_count)),
+                )
+            )
+
+        data = self.get_data()
+        data = data['humidity_data']
+
+        results = {}
+
+        # Interpret device response
+        for sensor in _sensors:
+            offset = self.lookup_humidity_offset(sensor)
+            if offset is None:
+                continue
+            humidity = (struct.unpack_from('>H', data, offset)[0] * 32) / 1000.0
+            results[sensor] = {
+                'ports': self.get_ports(),
+                'bus': self.get_bus(),
+                'sensor': sensor,
+                'humidity_pc': humidity,
             }
 
         return results
