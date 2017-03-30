@@ -305,6 +305,10 @@ class TemperDevice(object):
         for sensor in _sensors:
             offset = self.lookup_offset(sensor)
             celsius = data[offset] + data[offset+1] / 256.0
+            if celsius > 180:
+                # Operating range is -40C to +120C; this is a uint8 underflow
+                # The threshold gives a representatable range of -75 to +180C
+                celsius -= 256.0
             celsius = celsius * self._scale + self._offset
             results[sensor] = {
                 'ports': self.get_ports(),
