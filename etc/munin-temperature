@@ -37,7 +37,7 @@ def config():
     for device in handler.get_devices():
         port = device.get_ports()
         port_name = str(port).replace('.', '_')
-        print "temp_" + port_name + ".label Port {0:s} Temperature".format(port)            
+        print "temp_" + port_name + ".label Port {0:s} Temperature".format(str(port))
 
 
 def fetch():
