@@ -17,6 +17,8 @@ def parse_args():
                        help="Quiet: just degrees celcius as decimal")
     units.add_argument("-f", "--fahrenheit", action='store_true',
                        help="Quiet: just degrees fahrenheit as decimal")
+    units.add_argument("-H", "--humidity", action='store_true',
+                       help="Quiet: just percentage relative humidity as decimal")
     parser.add_argument("-s", "--sensor_ids", choices=['0', '1', 'all'],
                         help="IDs of sensors to use on the device " +
                         "(multisensor devices only)", default='0')
@@ -29,7 +31,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    quiet = args.celsius or args.fahrenheit
+    quiet = args.celsius or args.fahrenheit or args.humidity
 
     logging.basicConfig(level = logging.ERROR if quiet else logging.WARNING)
 
@@ -50,7 +52,17 @@ def main():
         else:
             sensors = [int(args.sensor_ids)]
 
-        readings.append(dev.get_temperatures(sensors=sensors))
+        temperatures = dev.get_temperatures(sensors=sensors)
+        humidities = dev.get_humidity(sensors=sensors)
+        combinations = {}
+        for k, v in temperatures.items():
+            c = v.copy()
+            try:
+                c.update(humidities[k])
+            except:
+                pass
+            combinations[k] = c
+        readings.append(combinations)
 
     for i, reading in enumerate(readings):
         output = ''
@@ -59,6 +71,8 @@ def main():
                 dict_key = 'temperature_c'
             elif args.fahrenheit:
                 dict_key = 'temperature_f'
+            elif args.humidity:
+                dict_key = 'humidity_pc'
 
             for sensor in sorted(reading):
                 output += '%0.1f; ' % reading[sensor][dict_key]
@@ -66,16 +80,25 @@ def main():
         else:
             portinfo = ''
             tempinfo = ''
+            huminfo = ''
             for sensor in sorted(reading):
                 if args.disp_ports and portinfo == '':
                     portinfo = " (bus %(bus)s - port %(ports)s)" % reading[sensor]
-                tempinfo += '%0.1f°C %0.1f°F; ' % (
-                    reading[sensor]['temperature_c'],
-                    reading[sensor]['temperature_f'],
-                )
+                try:
+                    tempinfo += '%0.1f°C %0.1f°F; ' % (
+                        reading[sensor]['temperature_c'],
+                        reading[sensor]['temperature_f'],
+                    )
+                except:
+                    pass
+                try:
+                    huminfo += '%0.1f%%RH; ' % (reading[sensor]['humidity_pc'])
+                except:
+                    pass
             tempinfo = tempinfo[0:len(output) - 2]
+            huminfo = huminfo[0:len(output) - 2]
 
-            output = 'Device #%i%s: %s' % (i, portinfo, tempinfo)
+            output = 'Device #%i%s: %s %s' % (i, portinfo, tempinfo, huminfo)
         print(output)
 
 
