@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Hints for local development
 ### Fixed
 - Negative temperature readings incorrectly wrapped around to very high temperatures
+- Fixed format string error in the munin plugin (PR#71)
 
 ## [1.5.2] - 2016-09-07 - Commit ID: e904dbe
 ### Fixed
