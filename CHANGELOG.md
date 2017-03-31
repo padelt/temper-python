@@ -7,8 +7,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 ### Added
 - Hints for local development
+### Fixed
+- Negative temperature readings incorrectly wrapped around to very high temperatures
 
-## [1.5.2] - 2016-09-07
+## [1.5.2] - 2016-09-07 - Commit ID: e904dbe
 ### Fixed
 - Clarification of install documentation from eric-s-raymond.
 - Workaround for misleading error message when at least one TEMPer USB device node has insufficient permissions. (#63)
