@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- Support for 0c45:7402 (RDing TEMPer1F_H1_V1.4) including humidity
 - Hints for local development
 ### Fixed
 - Negative temperature readings incorrectly wrapped around to very high temperatures
