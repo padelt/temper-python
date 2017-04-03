@@ -166,4 +166,4 @@ dependencies.
    `git tag v1.5.3 && git push origin v1.5.3`
 1. Edit `CHANGELOG.md` noting the commit ID you just tagged.
 1. Commit and push that change.
-
+1. Live PyPI upload: `python setup.py sdist upload -r pypi`
