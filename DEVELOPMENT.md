@@ -137,3 +137,33 @@ To test a change, you need to follow this workflow:
 
 This is a simple and surefire way to deal with module names and
 dependencies.
+
+# Release workflow
+
+1. Edit `setup.py` to reflect the new version.
+1. Edit `CHANGELOG.md` to document the new version (without commit ID).
+1. Setup your `~.pypirc`:
+   ```
+   [distutils]
+   index-servers =
+     pypi
+     pypitest
+
+   [pypi]
+   repository=https://pypi.python.org/pypi
+   username=myusername
+   password=mypass
+
+   [pypitest]
+   repository=https://testpypi.python.org/pypi
+   username=myusername
+   password=mypass
+   ```` 
+1. Test-Upload: `python setup.py sdist upload -r pypitest`
+1. Check if https://testpypi.python.org/pypi/temperusb looks good.
+1. Commit changes and note commit ID.
+1. Tag the revision and push the tag to Github:
+   `git tag v1.5.3 && git push origin v1.5.3`
+1. Edit `CHANGELOG.md` noting the commit ID you just tagged.
+1. Commit and push that change.
+
