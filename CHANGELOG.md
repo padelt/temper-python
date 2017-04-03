@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 
 No changes yet.
 
-## [1.5.3] - 2017-04-03
+## [1.5.3] - 2017-04-03 - Commit ID: 4da8be1
 ### Added
 - Support for 0c45:7402 (RDing TEMPer1F_H1_V1.4) including humidity
 - Hints for local development
