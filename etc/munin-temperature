@@ -9,6 +9,7 @@
 
 #%# capabilities=autoconf
 
+from __future__ import print_function
 import sys
 
 
@@ -21,23 +22,23 @@ def autoconf():
     try:
         handler = get_handler()
     except ImportError:
-        print "no (temper-python package is not installed)"
+        print ("no (temper-python package is not installed)")
     else:
         if len(handler.get_devices()):
-            print "yes"
+            print ("yes")
         else:
-            print "no (No devices found)"
+            print ("no (No devices found)")
 
 
 def config():
     handler = get_handler()
-    print "graph_title Temperature"
-    print "graph_vlabel Degrees Celsius"
-    print "graph_category sensors"
+    print ("graph_title Temperature")
+    print ("graph_vlabel Degrees Celsius")
+    print ("graph_category sensors")
     for device in handler.get_devices():
         port = device.get_ports()
         port_name = str(port).replace('.', '_')
-        print "temp_" + port_name + ".label Port {0:s} Temperature".format(str(port))
+        print ("temp_" + port_name + ".label Port {0:s} Temperature".format(str(port)))
 
 
 def fetch():
@@ -49,7 +50,7 @@ def fetch():
             temp = device.get_temperature()
         except Exception:
             temp = 'U'
-        print "temp_" + port_name + ".value {0:f}".format(temp)
+        print ("temp_" + port_name + ".value {0:f}".format(temp))
 
 
 def main():
