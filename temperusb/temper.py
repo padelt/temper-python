@@ -161,7 +161,8 @@ class TemperDevice(object):
         """
         Lookup the number of sensors on the device by product name.
         """
-        if (self._device.product == 'TEMPer1F_V1.3') or \
+        if (self._device.product == 'TEMPerV1.2') or \
+            (self._device.product == 'TEMPer1F_V1.3') or \
             (self._device.product == 'TEMPer1F_H1_V1.4'):
             return 1
 
