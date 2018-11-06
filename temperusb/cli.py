@@ -24,6 +24,8 @@ def parse_args():
                         "(multisensor devices only)", default='0')
     parser.add_argument("-S", "--sensor_count", type=int,
                         help="Override auto-detected number of sensors on the device")
+    parser.add_argument("-F", "--calibration_file", type=str, default="/etc/temper.conf"
+                        help="Config file containing calibration values")
     args = parser.parse_args()
 
     return args
@@ -35,7 +37,7 @@ def main():
 
     logging.basicConfig(level = logging.ERROR if quiet else logging.WARNING)
 
-    th = TemperHandler()
+    th = TemperHandler(args.calibration_file)
     devs = th.get_devices()
     if not quiet:
         print("Found %i devices" % len(devs))

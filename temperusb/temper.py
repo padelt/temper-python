@@ -79,7 +79,7 @@ class TemperDevice(object):
     """
     A TEMPer USB thermometer.
     """
-    def __init__(self, device, sensor_count=1):
+    def __init__(self, device, calib_file, sensor_count=1):
         self.set_sensor_count(sensor_count)
 
         self._device = device
@@ -118,7 +118,7 @@ class TemperDevice(object):
             self._scale = 1.0
             self._offset = 0.0
             try:
-                f = open('/etc/temper.conf', 'r')
+                f = open(calib_file, 'r')
             except IOError:
                 f = None
             if f:
@@ -416,10 +416,10 @@ class TemperHandler(object):
     Handler for TEMPer USB thermometers.
     """
 
-    def __init__(self):
+    def __init__(self, calib_file):
         self._devices = []
         for vid, pid in VIDPIDS:
-            self._devices += [TemperDevice(device) for device in \
+            self._devices += [TemperDevice(device, calib_file) for device in \
                 usb.core.find(find_all=True, idVendor=vid, idProduct=pid)]
         LOGGER.info('Found {0} TEMPer devices'.format(len(self._devices)))
 
