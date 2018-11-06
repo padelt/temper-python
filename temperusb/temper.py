@@ -82,6 +82,7 @@ class TemperDevice(object):
     def __init__(self, device, calib_file, sensor_count=1):
         self.set_sensor_count(sensor_count)
 
+        self._calib_file = calib_file
         self._device = device
         self._bus = device.bus
         self._ports = getattr(device, 'port_numbers', None)
@@ -118,7 +119,7 @@ class TemperDevice(object):
             self._scale = 1.0
             self._offset = 0.0
             try:
-                f = open(calib_file, 'r')
+                f = open(self._calib_file, 'r')
             except IOError:
                 f = None
             if f:
