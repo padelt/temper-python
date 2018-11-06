@@ -24,7 +24,7 @@ def parse_args():
                         "(multisensor devices only)", default='0')
     parser.add_argument("-S", "--sensor_count", type=int,
                         help="Override auto-detected number of sensors on the device")
-    parser.add_argument("-F", "--calibration_file", type=str, default="/etc/temper.conf"
+    parser.add_argument("-F", "--calibration_file", type=str, default="/etc/temper.conf",
                         help="Config file containing calibration values")
     args = parser.parse_args()
 
