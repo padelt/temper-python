@@ -84,7 +84,7 @@ class TemperDevice(object):
 
         self._device = device
         self._bus = device.bus
-        elf._ports = getattr(device, 'port_numbers', None)
+        self._ports = getattr(device, 'port_numbers', None)
         if self._ports != None:
             self._ports = ".".join(str(c) for c in self._ports)
         if self._ports == None:
