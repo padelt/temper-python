@@ -94,7 +94,7 @@ class TemperDevice(object):
             # https://github.com/padelt/temper-python/issues/63
             self.lookup_sensor_count()
         except ValueError as e:
-            if 'langid' in e.message:
+            if 'langid' in str(e):
                 raise usb.core.USBError("Error reading langids from device. "+
                 "This might be a permission issue. Please check that the device "+
                 "node for your TEMPer devices can be read and written by the "+
