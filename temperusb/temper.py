@@ -101,8 +101,8 @@ class TemperDevice(object):
                 "user running this code. The temperusb README.md contains hints "+
                 "about how to fix this. Search for 'USB device permissions'.")
         self.set_sensor_count(self.lookup_sensor_count())
-        LOGGER.debug('Found device | Bus:{0} Ports:{1}'.format(
-            self._bus, self._ports))
+        LOGGER.debug('Found device | Bus:{0} Ports:{1} SensorCount:{2}'.format(
+            self._bus, self._ports, self._sensor_count))
 
     def set_calibration_data(self, scale=None, offset=None):
         """
@@ -154,7 +154,8 @@ class TemperDevice(object):
         if self._device.product == 'TEMPer1F_H1_V1.4':
             # Has only 1 sensor, and the humidity data is at offset = 4
             return 4
-
+        if self._device.product == 'TEMPERHUM1V1.3':
+            return 4
         return None
 
     def lookup_sensor_count(self):
@@ -162,7 +163,8 @@ class TemperDevice(object):
         Lookup the number of sensors on the device by product name.
         """
         if (self._device.product == 'TEMPer1F_V1.3') or \
-            (self._device.product == 'TEMPer1F_H1_V1.4'):
+            (self._device.product == 'TEMPer1F_H1_V1.4') or \
+            (self._device.product == 'TEMPERHUM1V1.3'):
             return 1
 
         # All others are two - if not the case, contribute here: https://github.com/padelt/temper-python/issues
@@ -254,7 +256,9 @@ class TemperDevice(object):
             temp_data = self._interrupt_read()
 
             # Get humidity
-            if self._device.product == 'TEMPer1F_H1_V1.4':
+            LOGGER.debug("ID='%s'" % self._device.product)
+            if (self._device.product == 'TEMPer1F_H1_V1.4') or \
+                (self._device.product == 'TEMPERHUM1V1.3'):
                 humidity_data = temp_data
             else:
                 humidity_data = None
@@ -327,7 +331,10 @@ class TemperDevice(object):
         # Interpret device response
         for sensor in _sensors:
             offset = self.lookup_offset(sensor)
-            celsius = struct.unpack_from('>h', data, offset)[0] / 256.0
+            if self._device.product == 'TEMPERHUM1V1.3': #si7021 type device.
+                celsius = struct.unpack_from('>h', data, offset)[0] * 175.72 / 65536 - 46.85
+            else: # fm75 (?) type device
+                celsius = struct.unpack_from('>h', data, offset)[0] / 256.0
             # Apply scaling and offset (if any)
             celsius = celsius * self._scale + self._offset
             results[sensor] = {
@@ -365,10 +372,8 @@ class TemperDevice(object):
                     list(range(0, self._sensor_count)),
                 )
             )
-
         data = self.get_data()
         data = data['humidity_data']
-
         results = {}
 
         # Interpret device response
@@ -376,7 +381,10 @@ class TemperDevice(object):
             offset = self.lookup_humidity_offset(sensor)
             if offset is None:
                 continue
-            humidity = (struct.unpack_from('>H', data, offset)[0] * 32) / 1000.0
+            if self._device.product == 'TEMPERHUM1V1.3': #si7021 type device.
+                humidity = (struct.unpack_from('>H', data, offset)[0] * 125) / 65536 -6
+            else:  #fm75 (?) type device
+                humidity = (struct.unpack_from('>H', data, offset)[0] * 32) / 1000.0
             results[sensor] = {
                 'ports': self.get_ports(),
                 'bus': self.get_bus(),
