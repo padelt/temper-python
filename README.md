@@ -37,7 +37,7 @@ you should end up with two scripts conveniently installed:
     /usr/local/bin/temper-poll
     /usr/local/bin/temper-snmp
 
-If your system does not provide access as a normal user to the USB device, you need to rum them as root. See "USB device permissions" section for more on this.
+If your system does not provide access as a normal user to the USB device, you need to run them as root. See "USB device permissions" section for more on this.
 
 temper-poll accepts -p option now, which adds the USB bus and port information each device is plugged on.
 
