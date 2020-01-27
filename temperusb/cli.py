@@ -7,7 +7,7 @@ from .temper import TemperHandler
 
 
 def parse_args():
-    descr = "Temperature data from a TEMPer v1.2 sensor."
+    descr = "Temperature data from a TEMPer v1.2/v1.3 sensor."
 
     parser = argparse.ArgumentParser(description=descr)
     parser.add_argument("-p", "--disp_ports", action='store_true',
