@@ -167,7 +167,7 @@ class TemperDevice(object):
             (self._device.product == 'TEMPERHUM1V1.3') or \
             (self._device.product == 'TEMPer1F_H1_V1.4'):
             return 1
-
+        if (self._device.product == 'TEMPerNTC1.O'): return 3
         # All others are two - if not the case, contribute here: https://github.com/padelt/temper-python/issues
         return 2
 
@@ -186,8 +186,8 @@ class TemperDevice(object):
         # Currently this only supports 1 and 2 sensor models.
         # If you have the 8 sensor model, please contribute to the
         # discussion here: https://github.com/padelt/temper-python/issues
-        if count not in [1, 2,]:
-            raise ValueError('Only sensor_count of 1 or 2 supported')
+        if count not in [1, 2, 3]:
+            raise ValueError('Only sensor_count of 1-3 supported')
 
         self._sensor_count = int(count)
 
