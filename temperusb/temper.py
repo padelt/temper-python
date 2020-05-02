@@ -76,6 +76,8 @@ def find_ports(device):
 
 
 class TemperDevice(object):
+    _attached = False
+
     """
     A TEMPer USB thermometer.
     """
@@ -207,13 +209,17 @@ class TemperDevice(object):
             return self._bus
         return ''
 
-    def get_data(self, reset_device=False):
+    def attach(self, reset_device=False):
         """
-        Get data from the USB device.
+        Attach to the USB device in preparation for getting data.
         """
+
         try:
             if reset_device:
                 self._device.reset()
+
+            if self._attached:
+                return
 
             # detach kernel driver from both interfaces if attached, so we can set_configuration()
             for interface in [0,1]:
@@ -237,7 +243,29 @@ class TemperDevice(object):
                 #self._device.ctrl_transfer(bmRequestType=0x21, bRequest=0x09,
                 #    wValue=0x0201, wIndex=0x00, data_or_wLength='\x01\x01',
                 #    timeout=TIMEOUT)
+            self._attached = True
 
+        except usb.USBError as err:
+            if not reset_device:
+                LOGGER.warning("Encountered %s, resetting %r and trying again.", err, self._device)
+                return self.get_data(True)
+
+            # Catch the permissions exception and add our message
+            if "not permitted" in str(err):
+                raise Exception(
+                    "Permission problem accessing USB. "
+                    "Maybe I need to run as root?")
+            else:
+                LOGGER.error(err)
+                raise
+
+
+    def get_data(self, reset_device=False, detach=False):
+        """
+        Get data from the USB device.
+        """
+        try:
+            self.attach(reset_device)
 
             # Magic: Our TEMPerV1.4 likes to be asked twice.  When
             # only asked once, it get's stuck on the next access and
@@ -267,9 +295,9 @@ class TemperDevice(object):
             # Combine temperature and humidity data
             data = {'temp_data': temp_data, 'humidity_data': humidity_data}
 
-            # Be a nice citizen and undo potential interface claiming.
-            # Also see: https://github.com/walac/pyusb/blob/master/docs/tutorial.rst#dont-be-selfish
-            usb.util.dispose_resources(self._device)
+            if (detach):
+                self.detach()
+
             return data
         except usb.USBError as err:
             if not reset_device:
@@ -285,11 +313,27 @@ class TemperDevice(object):
                 LOGGER.error(err)
                 raise
 
-    def get_temperature(self, format='celsius', sensor=0):
+    def detach(self):
+        try:
+            # Be a nice citizen and undo potential interface claiming.
+            # Also see: https://github.com/walac/pyusb/blob/master/docs/tutorial.rst#dont-be-selfish
+            usb.util.dispose_resources(self._device)
+            self._attached = False
+        except usb.USBError as err:
+            # Catch the permissions exception and add our message
+            if "not permitted" in str(err):
+                raise Exception(
+                    "Permission problem accessing USB. "
+                    "Maybe I need to run as root?")
+            else:
+                LOGGER.error(err)
+                raise
+
+    def get_temperature(self, format='celsius', sensor=0, detach=False):
         """
         Get device temperature reading.
         """
-        results = self.get_temperatures(sensors=[sensor,])
+        results = self.get_temperatures(sensors=[sensor,], detach=detach)
 
         if format == 'celsius':
             return results[sensor]['temperature_c']
@@ -300,7 +344,7 @@ class TemperDevice(object):
         else:
             raise ValueError("Unknown format")
 
-    def get_temperatures(self, sensors=None):
+    def get_temperatures(self, sensors=None, detach=False):
         """
         Get device temperature reading.
 
@@ -324,7 +368,7 @@ class TemperDevice(object):
                 )
             )
 
-        data = self.get_data()
+        data = self.get_data(detach=detach)
         data = data['temp_data']
 
         results = {}
@@ -350,7 +394,7 @@ class TemperDevice(object):
 
         return results
 
-    def get_humidity(self, sensors=None):
+    def get_humidity(self, sensors=None, detach=False):
         """
         Get device humidity reading.
 
@@ -373,7 +417,7 @@ class TemperDevice(object):
                     list(range(0, self._sensor_count)),
                 )
             )
-        data = self.get_data()
+        data = self.get_data(detach=detach)
         data = data['humidity_data']
         results = {}
 
