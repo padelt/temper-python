@@ -35,7 +35,7 @@ from temperusb.temper import TIMEOUT
             1,
             b"\x01\x80\x33\x01\x00\x00\x00\x00",
             b"\x00\x00\x20\x1A",  # 0x201A converts to 32.1C (fm75)
-            32.1,
+            [32.1],
             None,
         ],
         [
@@ -45,7 +45,7 @@ from temperusb.temper import TIMEOUT
             1,
             b"\x01\x80\x33\x01\x00\x00\x00\x00",
             b"\x00\x00\x00\x00\x20\x1A",  # 0x201A converts to 32.1C (fm75)
-            32.1,
+            [32.1],
             None,
         ],
         [
@@ -55,8 +55,8 @@ from temperusb.temper import TIMEOUT
             1,
             b"\x01\x80\x33\x01\x00\x00\x00\x00",
             b"\x00\x00\x56\x2C\xBF\xB1",  # 0x562C,0xBFB1 converts to 12.3C,87.6% (si7021)
-            12.3,
-            87.6,
+            [12.3],
+            [87.6],
         ],
         [
             "TEMPer1F_H1_V1.4",
@@ -65,8 +65,8 @@ from temperusb.temper import TIMEOUT
             1,
             b"\x01\x80\x33\x01\x00\x00\x00\x00",
             b"\x00\x00\x20\x1A\x0C\x0C",  # 0x201A,0x0C0C converts to 32.1C,98.7% (fm75)
-            32.1,
-            98.7,
+            [32.1],
+            [98.7],
         ],
         [
             "TEMPerNTC1.O",
@@ -75,7 +75,7 @@ from temperusb.temper import TIMEOUT
             3,
             b"\x01\x80\x33\x01\x00\x00\x00\x00",
             b"\x00\x00\x20\x1A\x2B\x33\x36\x4D",  # 0x201A,0x2B33,0x364D converts to 32.1,43.2,54.3C (fm75)
-            32.1,
+            [32.1, 43.2, 54.3],
             None,
         ],
         # [
@@ -85,7 +85,7 @@ from temperusb.temper import TIMEOUT
         #     1,
         #     b"\x01\x80\x33\x01\x00\x00\x00\x00",
         #     b"\x00\x00\x20\x1A\x2B\x33",  # 0x201A,0x2B33 converts to 32.1C, 43.2C (fm75)
-        #     32.1,
+        #     [32.1,43.2],
         # ],
     ],
 )
@@ -146,10 +146,12 @@ def test_TemperDevice(
     # read a temperature
     results = dev.get_temperatures(None)
 
-    # check the temperature is what we were expecting.
-    assert results[0]["temperature_c"] == pytest.approx(temperature_out_expected, 0.01)
+    for i, temperature in enumerate(temperature_out_expected):
+        # check the temperature is what we were expecting.
+        assert results[i]["temperature_c"] == pytest.approx(temperature, 0.01)
 
     # if the device is expected to also report humidty
     if humidity_out_expected:
-        results_h = dev.get_humidity(None)
-        results_h[0]["humidity_pc"] == pytest.approx(humidity_out_expected)
+        for i, humidity in enumerate(humidity_out_expected):
+            results_h = dev.get_humidity(None)
+            results_h[i]["humidity_pc"] == pytest.approx(humidity)
