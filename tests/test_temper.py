@@ -2,30 +2,28 @@
 pytests for temperusb
 
 run from the project root with:
-pytest --cov=temperusb
+pytest --cov=temperusb --cov-report term-missing
 """
 
 import os
-
 import pytest
 import usb
 from unittest.mock import MagicMock, patch, Mock
 
 import temperusb
-
 from temperusb.temper import TIMEOUT
 
 
 @pytest.mark.parametrize(
     [
-        "productname",
-        "vid",
-        "pid",
-        "count",
-        "ctrl_data_in_expected",
-        "data_out_raw",
-        "temperature_out_expected",
-        "humidity_out_expected",
+        "productname",  # the faked usb device product name
+        "vid",  # faked vendor ID
+        "pid",  # faked vendor ID
+        "count",  # number of sensors we are expect to be reported
+        "ctrl_data_in_expected",  # the ctrl data we expect to be sent to the (faked) usb device
+        "data_out_raw",  # the bytes that the usb device will return (our encoded temp/RHs needs to be in here)
+        "temperature_out_expected",  # array of temperatures that we are expecting to see decoded.
+        "humidity_out_expected",  # array of humidities that we are expecting to see decoded
     ],
     [
         [
@@ -122,7 +120,6 @@ def test_TemperDevice(
         timeout=None,
         side_effect=ctrl_transfer_dummy,
     )
-    # print("usbdev.bus=%s" % usbdev.bus)
     usbdev.read = Mock(return_value=data_out_raw)
 
     def match_pids(find_all, idVendor, idProduct):
