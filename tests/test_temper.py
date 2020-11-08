@@ -27,6 +27,16 @@ from temperusb.temper import TIMEOUT
     ],
     [
         [
+            "generic_unmatched",  # Default is to assume 2 fm75 style temperature sensors
+            0x0C45,
+            0x7401,
+            2,
+            b"\x01\x80\x33\x01\x00\x00\x00\x00",
+            b"\x00\x00\x20\x1A\x2B\x33",  # 0x201A,0x2B33 converts to 32.1C, 43.2C (fm75)
+            [32.1, 43.2],
+            None,
+        ],
+        [
             "TEMPerV1.2",
             0x0C45,
             0x7401,
@@ -76,15 +86,6 @@ from temperusb.temper import TIMEOUT
             [32.1, 43.2, 54.3],
             None,
         ],
-        # [
-        #     "????",  # Has 2 sensors
-        #     0x0C45,
-        #     0x7401,
-        #     1,
-        #     b"\x01\x80\x33\x01\x00\x00\x00\x00",
-        #     b"\x00\x00\x20\x1A\x2B\x33",  # 0x201A,0x2B33 converts to 32.1C, 43.2C (fm75)
-        #     [32.1,43.2],
-        # ],
     ],
 )
 def test_TemperDevice(
