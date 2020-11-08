@@ -21,55 +21,83 @@ from temperusb.temper import TIMEOUT
         "productname",
         "vid",
         "pid",
+        "count",
         "ctrl_data_in_expected",
         "data_out_raw",
         "temperature_out_expected",
+        "humidity_out_expected",
     ],
     [
         [
             "TEMPerV1.2",
             0x0C45,
             0x7401,
+            1,
             b"\x01\x80\x33\x01\x00\x00\x00\x00",
             b"\x00\x00\x20\x1A",  # 0x201A converts to 32.1C (fm75)
             32.1,
+            None,
         ],
-        # [
-        #     "TEMPer1F_V1.3",  # Has 2 sensors
-        #     0x0C45,
-        #     0x7401,
-        #     b"\x01\x80\x33\x01\x00\x00\x00\x00",
-        #     b"\x00\x00\x20\x1A\x2B\x33",  # 0x201A,0x2B33 converts to 32.1C, 43.2C (fm75)
-        #     32.1,
-        # ],
+        [
+            "TEMPer1F_V1.3",  # Has 1 sensor at offset 4
+            0x0C45,
+            0x7401,
+            1,
+            b"\x01\x80\x33\x01\x00\x00\x00\x00",
+            b"\x00\x00\x00\x00\x20\x1A",  # 0x201A converts to 32.1C (fm75)
+            32.1,
+            None,
+        ],
         [
             "TEMPERHUM1V1.3",
             0x0C45,
             0x7401,
+            1,
             b"\x01\x80\x33\x01\x00\x00\x00\x00",
-            b"\x00\x00\x56\x2C",  # 0x562C converts to 12.3C (si7021)
+            b"\x00\x00\x56\x2C\xBF\xB1",  # 0x562C,0xBFB1 converts to 12.3C,87.6% (si7021)
             12.3,
+            87.6,
         ],
         [
             "TEMPer1F_H1_V1.4",
             0x0C45,
             0x7401,
+            1,
             b"\x01\x80\x33\x01\x00\x00\x00\x00",
-            b"\x00\x00\x20\x1A",  # 0x201A converts to 32.1C (fm75)
+            b"\x00\x00\x20\x1A\x0C\x0C",  # 0x201A,0x0C0C converts to 32.1C,98.7% (fm75)
             32.1,
+            98.7,
         ],
         [
             "TEMPerNTC1.O",
             0x0C45,
             0x7401,
+            3,
             b"\x01\x80\x33\x01\x00\x00\x00\x00",
             b"\x00\x00\x20\x1A\x2B\x33\x36\x4D",  # 0x201A,0x2B33,0x364D converts to 32.1,43.2,54.3C (fm75)
             32.1,
+            None,
         ],
+        # [
+        #     "????",  # Has 2 sensors
+        #     0x0C45,
+        #     0x7401,
+        #     1,
+        #     b"\x01\x80\x33\x01\x00\x00\x00\x00",
+        #     b"\x00\x00\x20\x1A\x2B\x33",  # 0x201A,0x2B33 converts to 32.1C, 43.2C (fm75)
+        #     32.1,
+        # ],
     ],
 )
 def test_TemperDevice(
-    productname, vid, pid, ctrl_data_in_expected, data_out_raw, temperature_out_expected
+    productname,
+    vid,
+    pid,
+    count,
+    ctrl_data_in_expected,
+    data_out_raw,
+    temperature_out_expected,
+    humidity_out_expected,
 ):
     """
     Patches the underlying usb port call to allow us to verify the data
@@ -111,7 +139,17 @@ def test_TemperDevice(
     # Check that we only found one sensor
     assert len(devs) == 1, "Should be only one sensor type matching"
 
+    dev = devs[0]
+
+    # check that the sensor count reported is what we expect
+    assert dev.get_sensor_count() == count
     # read a temperature
-    results = devs[0].get_temperatures(None)
+    results = dev.get_temperatures(None)
+
     # check the temperature is what we were expecting.
     assert results[0]["temperature_c"] == pytest.approx(temperature_out_expected, 0.01)
+
+    # if the device is expected to also report humidty
+    if humidity_out_expected:
+        results_h = dev.get_humidity(None)
+        results_h[0]["humidity_pc"] == pytest.approx(humidity_out_expected)
