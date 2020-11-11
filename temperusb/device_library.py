@@ -54,6 +54,15 @@ DEVICE_LIBRARY = {
         hum_sens_offsets=None,
         type=TemperType.FM75,
     ),
+    "TEMPer1V1.4": TemperConfig(
+        temp_sens_offsets=[2, 4],
+        hum_sens_offsets=None,
+        type=TemperType.FM75,
+    ),
+    # The config used if the sensor type is not recognised.
+    # If your sensor is working but showing as unrecognised, please
+    # add a new entry above based on "generic_fm75" below, and submit 
+    # a PR to https://github.com/padelt/temper-python/pulls
     "generic_fm75": TemperConfig(
         temp_sens_offsets=[2, 4],
         hum_sens_offsets=None,
