@@ -152,4 +152,4 @@ def test_TemperDevice(
     if humidity_out_expected:
         for i, humidity in enumerate(humidity_out_expected):
             results_h = dev.get_humidity(None)
-            results_h[i]["humidity_pc"] == pytest.approx(humidity)
+            assert results_h[i]["humidity_pc"] == pytest.approx(humidity, 0.1)
