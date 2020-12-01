@@ -8,6 +8,22 @@ All notable changes to this project will be documented in this file.
 
 No changes yet.
 
+## [next-1.6.0]
+
+Major changes:
+- A new architecture for supporting different device types.
+- Tests using pytest
+
+### Added
+- Add support for 3 sensor tempers and TEMPerNTC1.O
+- Add support for TemperHUM with si7021 type sensor
+- Add support for TEMPer1V1.4
+
+### Fixed
+- Fixes for the munin plugin
+- Report TEMPerV1.2 devices as having a single sensor
+- Fix error message about USB permissions to display correctly on Python 3.6
+
 ## [1.5.3] - 2017-04-03 - Commit ID: 4da8be1
 ### Added
 - Support for 0c45:7402 (RDing TEMPer1F_H1_V1.4) including humidity
