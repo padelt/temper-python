@@ -104,6 +104,8 @@ specific USB devices (with matching VID/PID) by anyone. Install like this:
 
     sudo cp etc/99-tempsensor.rules /etc/udev/rules.d/
 
+Then restart.
+
 To check for success, find the bus and device IDs of the devices like this:
 
     pi@raspi-temper1 ~ $ lsusb | grep "0c45:7401"
