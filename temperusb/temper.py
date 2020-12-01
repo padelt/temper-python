@@ -25,9 +25,9 @@ ENDPOINT = 0x82
 INTERFACE = 1
 CONFIG_NO = 1
 TIMEOUT = 5000
-USB_PORTS_STR = '^\s*(\d+)-(\d+(?:\.\d+)*)'
+USB_PORTS_STR = r'^\s*(\d+)-(\d+(?:\.\d+)*)'
 CALIB_LINE_STR = USB_PORTS_STR +\
-    '\s*:\s*scale\s*=\s*([+|-]?\d*\.\d+)\s*,\s*offset\s*=\s*([+|-]?\d*\.\d+)'
+    r'\s*:\s*scale\s*=\s*([+|-]?\d*\.\d+)\s*,\s*offset\s*=\s*([+|-]?\d*\.\d+)'
 USB_SYS_PREFIX = '/sys/bus/usb/devices/'
 COMMANDS = {
     'temp': b'\x01\x80\x33\x01\x00\x00\x00\x00',
@@ -160,7 +160,7 @@ class TemperDevice(object):
 
     def lookup_humidity_offset(self, sensor):
         """
-        Get the the offset of the humidity data.
+        Get the offset of the humidity data.
         """
         if self.hum_sens_offsets:
             return self.hum_sens_offsets[sensor]
@@ -234,11 +234,11 @@ class TemperDevice(object):
             # does not hurt to explicitly claim the interface.
             usb.util.claim_interface(self._device, INTERFACE)
 
-                # Turns out we don't actually need that ctrl_transfer.
-                # Disabling this reduces number of USBErrors from ~7/30 to 0!
-                #self._device.ctrl_transfer(bmRequestType=0x21, bRequest=0x09,
-                #    wValue=0x0201, wIndex=0x00, data_or_wLength='\x01\x01',
-                #    timeout=TIMEOUT)
+            # Turns out we don't actually need that ctrl_transfer.
+            # Disabling this reduces number of USBErrors from ~7/30 to 0!
+            #self._device.ctrl_transfer(bmRequestType=0x21, bRequest=0x09,
+            #    wValue=0x0201, wIndex=0x00, data_or_wLength='\x01\x01',
+            #    timeout=TIMEOUT)
 
 
             # Magic: Our TEMPerV1.4 likes to be asked twice.  When
