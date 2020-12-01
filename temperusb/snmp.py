@@ -3,7 +3,7 @@
 # Run snmp_temper.py as a pass-persist module for NetSNMP.
 # See README.md for instructions.
 # 
-# Copyright 2012-2014 Philipp Adelt <info@philipp.adelt.net>
+# Copyright 2012-2020 Philipp Adelt <info@philipp.adelt.net>
 #
 # This code is licensed under the GNU public license (GPL). See LICENSE.md for details.
 

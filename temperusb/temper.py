@@ -3,7 +3,7 @@
 # Handles devices reporting themselves as USB VID/PID 0C45:7401 (mine also says
 # RDing TEMPerV1.2).
 #
-# Copyright 2012-2016 Philipp Adelt <info@philipp.adelt.net> and contributors.
+# Copyright 2012-2020 Philipp Adelt <info@philipp.adelt.net> and contributors.
 #
 # This code is licensed under the GNU public license (GPL). See LICENSE.md for
 # details.
