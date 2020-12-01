@@ -288,3 +288,4 @@ The `snmp_passpersist` mode is Python 2 only because the upstream package is not
 * Reduced kernel messages, support multiple sensors, and support TEMPer1F_V1.3 by Philip Jay (@ps-jay on Github)
 * Python 3 compatibility and rewrite of cli.py to use argparse by Will Furnass (@willfurnass on Github)
 * TEMPerV1.4 support by Christian von Roques (@roques on Github)
+* Pytest and archicture improvement by Dave Thompson (@davet2001 on Github).
