@@ -339,6 +339,7 @@ class TemperDevice(object):
                 celsius = struct.unpack_from('>h', data, offset)[0] / 256.0
             # Apply scaling and offset (if any)
             celsius = celsius * self._scale + self._offset
+            LOGGER.debug("T=%.5fC" % celsius)
             results[sensor] = {
                 'ports': self.get_ports(),
                 'bus': self.get_bus(),
@@ -387,6 +388,7 @@ class TemperDevice(object):
                 humidity = (struct.unpack_from('>H', data, offset)[0] * 125) / 65536 -6
             else:  #fm75 (?) type device
                 humidity = (struct.unpack_from('>H', data, offset)[0] * 32) / 1000.0
+            LOGGER.debug("RH=%.5f%%" % humidity)
             results[sensor] = {
                 'ports': self.get_ports(),
                 'bus': self.get_bus(),
