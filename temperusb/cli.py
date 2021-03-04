@@ -34,7 +34,6 @@ def parse_args():
 def main():
     args = parse_args()
     quiet = args.celsius or args.fahrenheit or args.humidity
-    debug = args.verbose
     lvl = logging.ERROR if quiet else logging.WARNING
     if args.verbose:
         lvl = logging.DEBUG
