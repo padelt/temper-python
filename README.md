@@ -53,7 +53,7 @@ with -p option
     Found 1 devices
     Device #0 (bus 1 - port 1.3): 22.4°C 72.3°F
 
-Which tells you there is a a USB hub plugged (internally or externally) on the port 1 of the bus 1 of the host, and your TEMPer device  is on the port 3 of that hub.
+Which tells you there is a USB hub plugged (internally or externally) on the port 1 of the bus 1 of the host, and your TEMPer device  is on the port 3 of that hub.
 
 ## Tell kernel to leave TEMPer alone 
 
@@ -127,13 +127,13 @@ along with `snmpd`.
 ## What to add to snmpd.conf
 
 To emulate an APC Battery/Internal temperature value, add something like this to snmpd.conf.
-The highest of all measured temperatures in degrees celcius as an integer is reported.
+The highest of all measured temperatures in degrees Celsius as an integer is reported.
 
     pass_persist    .1.3.6.1.4.1.318.1.1.1.2.2.2 /usr/local/bin/temper-snmp
 
 Alternatively, emulate a Cisco device's temperature information with the following.
 The first three detected devices will be reported as ..13.1.3.1.3.1, ..3.2 and ..3.3 .
-The value is the temperature in degree celcius as an integer.
+The value is the temperature in degree Celsius as an integer.
 
     pass_persist    .1.3.6.1.4.1.9.9.13.1.3 /usr/local/bin/temper-snmp
 
@@ -213,7 +213,7 @@ any plugging on the device. Even then, you are not safe. Sorry.
 
 ## Note by GM3D
 
-Since calibration parameters must be set per each device, we need some way to identify them physically. As mentioned above, the serial number for all TEMPer devices is zero, so there is no true way to tell which is which programatically. The USB device number does not work either since it changes every time you reboot the machine or plug/unplug the device. The way that possibly can work is identifying them by the combination of the bus number and the USB port (possibly a chain of ports, if you have hubs in between), which is what I am doing for now.
+Since calibration parameters must be set per each device, we need some way to identify them physically. As mentioned above, the serial number for all TEMPer devices is zero, so there is no true way to tell which is which programmatically. The USB device number does not work either since it changes every time you reboot the machine or plug/unplug the device. The way that possibly can work is identifying them by the combination of the bus number and the USB port (possibly a chain of ports, if you have hubs in between), which is what I am doing for now.
 
 This information is basically the same with what you can get with `lsusb -t` and is based on the information in the sysfs directory `/sys/bus/usb/devices` (see below). So far I am assuming this scheme is persistent enough for regular use cases, but even the bus number may change in some cases like - for example - if your machine is a tablet like machine and you hotplug it to a keyboard dock with a USB root hub in it. In such case you will need to re-run `lsusb` and adjust the bus-port numbers in the configuration file accordingly. At the moment I have no clue about SNMP OID persistence.
 
