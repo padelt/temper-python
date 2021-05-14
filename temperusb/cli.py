@@ -24,6 +24,8 @@ def parse_args():
                         "(multisensor devices only)", default='0')
     parser.add_argument("-S", "--sensor_count", type=int,
                         help="Override auto-detected number of sensors on the device")
+    parser.add_argument("-v", "--verbose", action='store_true',
+                       help="Verbose: display all debug information")
     args = parser.parse_args()
 
     return args
@@ -32,8 +34,10 @@ def parse_args():
 def main():
     args = parse_args()
     quiet = args.celsius or args.fahrenheit or args.humidity
-
-    logging.basicConfig(level = logging.ERROR if quiet else logging.WARNING)
+    lvl = logging.ERROR if quiet else logging.WARNING
+    if args.verbose:
+        lvl = logging.DEBUG
+    logging.basicConfig(level = lvl)
 
     th = TemperHandler()
     devs = th.get_devices()
