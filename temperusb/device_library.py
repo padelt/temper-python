@@ -33,6 +33,11 @@ DEVICE_LIBRARY = {
         hum_sens_offsets=None,
         type=TemperType.FM75,
     ),
+    "TEMPerV1.4": TemperConfig(
+        temp_sens_offsets=[2],
+        hum_sens_offsets=None,
+        type=TemperType.FM75,
+    ),
     "TEMPer1F_V1.3": TemperConfig(
         # Has only 1 sensor at offset 4
         temp_sens_offsets=[4],

@@ -19,9 +19,9 @@ from temperusb.temper import TIMEOUT
         "productname",  # the faked usb device product name
         "vid",  # faked vendor ID
         "pid",  # faked vendor ID
-        "count",  # number of sensors we are expect to be reported
+        "count",  # number of sensors we expect to be reported
         "ctrl_data_in_expected",  # the ctrl data we expect to be sent to the (faked) usb device
-        "data_out_raw",  # the bytes that the usb device will return (our encoded temp/RHs needs to be in here)
+        "data_out_raw",  # the bytes that the usb device will return (our encoded temps/RHs need to be in here)
         "temperature_out_expected",  # array of temperatures that we are expecting to see decoded.
         "humidity_out_expected",  # array of humidities that we are expecting to see decoded
     ],
@@ -38,6 +38,16 @@ from temperusb.temper import TIMEOUT
         ],
         [
             "TEMPerV1.2",
+            0x0C45,
+            0x7401,
+            1,
+            b"\x01\x80\x33\x01\x00\x00\x00\x00",
+            b"\x00\x00\x20\x1A",  # 0x201A converts to 32.1C (fm75)
+            [32.1],
+            None,
+        ],
+        [
+            "TEMPerV1.4",
             0x0C45,
             0x7401,
             1,
