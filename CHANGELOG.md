@@ -8,9 +8,8 @@ All notable changes to this project will be documented in this file.
 
 No changes yet.
 
-## [next-1.6.0]
-
-Major changes:
+## [1.6.0]
+### Added
 - A new architecture for supporting different device types.
 - Tests using pytest
 
