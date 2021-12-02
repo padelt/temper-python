@@ -99,7 +99,7 @@ def main():
             huminfo = huminfo[0:len(output) - 2]
 
             output = 'Device #%i%s: %s %s' % (i, portinfo, tempinfo, huminfo)
-        print(output)
+            print(output)
 
 
 if __name__ == '__main__':
