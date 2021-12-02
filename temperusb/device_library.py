@@ -28,6 +28,11 @@ class TemperConfig:
 
 
 DEVICE_LIBRARY = {
+    "TEMPer2V1.3": TemperConfig(
+        temp_sens_offsets=[2, 4],
+        hum_sens_offsets=None,
+        type=TemperType.FM75,
+    ),
     "TEMPerV1.2": TemperConfig(
         temp_sens_offsets=[2],
         hum_sens_offsets=None,

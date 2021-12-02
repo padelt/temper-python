@@ -37,6 +37,16 @@ from temperusb.temper import TIMEOUT
             None,
         ],
         [
+            'TEMPer2V1.3',
+            0x0c45,
+            0x7401,
+            2,
+            b"\x01\x80\x33\x01\x00\x00\x00\x00",
+            b"\x80\x04\x0a\xe0\x15\x00\x1d\x15", # 0x0AE0, 0x1500  converts to 10.9C, 21.0C (fm75)
+            [10.9, 21.0],
+            None,
+        ],
+        [
             "TEMPerV1.2",
             0x0C45,
             0x7401,
