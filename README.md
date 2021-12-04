@@ -28,7 +28,11 @@ Under Debian/Ubuntu, treat yourself to some package goodness:
 
 # Installation and usage
 
-Clone the repository, cd into its top-level directory, and run
+To install using pip, run
+
+    pip install temperusb
+
+To install from source, clone the repository, cd into its top-level directory, and run
 
     sudo python setup.py install
 
