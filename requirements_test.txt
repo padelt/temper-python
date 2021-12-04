@@ -1,0 +1,3 @@
+# Dependencies for running tests.
+pytest
+pyusb
