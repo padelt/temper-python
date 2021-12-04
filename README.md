@@ -343,8 +343,7 @@ as seen on [Google+](https://plus.google.com/105569853186899442987/posts/N9T7xAj
 
 # Compatibility with Python versions
 
-This should work on both Python 2 and 3. It was tested with Python 2.7.3 and 3.2.3.
-The `snmp_passpersist` mode is Python 2 only because the upstream package is not ready yet.
+This should work on Python 3.5 and above. It was tested with Python 3.5, 3.6, 3.7, 3.8, 3.9, 3.10.
 
 # Authors
 
