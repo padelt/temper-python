@@ -102,7 +102,7 @@ from temperusb.temper import TIMEOUT
             0x7401,
             1,
             b"\x01\x80\x33\x01\x00\x00\x00\x00",
-            b"\x00\x00\x00\x00\x20\x1A",  # 0x201A converts to 32.1C (fm75)
+            b"\x00\x00\x20\x1A\x0C\x0C",  # 0x201A,0x0C0C converts to 32.1C,98.7% (fm75)
             [32.1],
             None,
         ],
