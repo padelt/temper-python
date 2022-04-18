@@ -87,7 +87,7 @@ from temperusb.temper import TIMEOUT
             [87.6],
         ],
         [
-            "TEMPer1F_H1_V1.4",
+            "TEMPerHumiV1.1",
             0x0C45,
             0x7401,
             1,
