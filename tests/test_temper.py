@@ -87,6 +87,16 @@ from temperusb.temper import TIMEOUT
             [87.6],
         ],
         [
+            "TEMPerHumiV1.0",
+            0x0C45,
+            0x7401,
+            1,
+            b"\x01\x80\x33\x01\x00\x00\x00\x00",
+            b"\x00\x00\x20\x1A\x0C\x0C",  # 0x201A,0x0C0C converts to 32.1C,98.7% (fm75)
+            [32.1],
+            [98.7],
+        ],
+        [
             "TEMPerHumiV1.1",
             0x0C45,
             0x7401,
