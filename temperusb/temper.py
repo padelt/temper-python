@@ -19,6 +19,7 @@ from .device_library import DEVICE_LIBRARY, TemperType, TemperConfig
 VIDPIDS = [
     (0x0c45, 0x7401),
     (0x0c45, 0x7402),
+    (0x1a86, 0xe025),
 ]
 REQ_INT_LEN = 8
 ENDPOINT = 0x82
