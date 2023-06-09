@@ -1,2 +1,3 @@
 SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="0c45", ATTRS{idProduct}=="7401", MODE="666"
 SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="0c45", ATTRS{idProduct}=="7402", MODE="666"
+SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="e025", MODE="666"
