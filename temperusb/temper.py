@@ -194,6 +194,12 @@ class TemperDevice(object):
 
         self._sensor_count = int(count)
 
+    def get_product(self):
+        """
+        Get device product name.
+        """
+        return self._device.product
+
     def get_ports(self):
         """
         Get device USB ports.
