@@ -8,7 +8,16 @@ All notable changes to this project will be documented in this file.
 
 No changes yet.
 
-## [1.6.0]
+## [1.6.1] - 2023-12-19
+### Added
+- Support for for TEMPer2V1.3
+- Support for TEMPerHumiV1.1
+- Support for TEMPerHumiV1.0
+- Experimental support for TEMPer2_V3.7
+- get_product() function to get product name
+- Updates to documentation
+
+## [1.6.0] - 2021-11-03
 ### Added
 - A new architecture for supporting different device types.
 - Tests using pytest
