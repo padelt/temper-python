@@ -1,3 +1,3 @@
 # Dependencies for running tests.
-pytest
-pyusb
+pytest>=7.4.3
+
