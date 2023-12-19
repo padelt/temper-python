@@ -19,6 +19,7 @@ from .device_library import DEVICE_LIBRARY, TemperType, TemperConfig
 VIDPIDS = [
     (0x0c45, 0x7401),
     (0x0c45, 0x7402),
+    (0x1a86, 0xe025),
 ]
 REQ_INT_LEN = 8
 ENDPOINT = 0x82
@@ -192,6 +193,12 @@ class TemperDevice(object):
             raise ValueError('Only sensor_count of 1-3 supported')
 
         self._sensor_count = int(count)
+
+    def get_product(self):
+        """
+        Get device product name.
+        """
+        return self._device.product
 
     def get_ports(self):
         """

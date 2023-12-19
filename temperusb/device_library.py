@@ -59,6 +59,11 @@ DEVICE_LIBRARY = {
         hum_sens_offsets=[4],
         type=TemperType.SI7021,
     ),
+    "TEMPerHumiV1.0": TemperConfig(
+        temp_sens_offsets=[2],
+        hum_sens_offsets=[4],
+        type=TemperType.FM75,
+    ),
     "TEMPerHumiV1.1": TemperConfig(
         temp_sens_offsets=[2],
         hum_sens_offsets=[4],
@@ -76,6 +81,11 @@ DEVICE_LIBRARY = {
     ),
     "TEMPer1V1.4": TemperConfig(
         temp_sens_offsets=[2],
+        hum_sens_offsets=None,
+        type=TemperType.FM75,
+    ),
+    "TEMPer2_V3.7": TemperConfig(
+        temp_sens_offsets=[2, 10],
         hum_sens_offsets=None,
         type=TemperType.FM75,
     ),
