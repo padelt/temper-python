@@ -347,7 +347,7 @@ as seen on [Google+](https://plus.google.com/105569853186899442987/posts/N9T7xAj
 
 # Compatibility with Python versions
 
-This should work on Python 3.5 and above. It was tested with Python 3.5, 3.6, 3.7, 3.8, 3.9, 3.10.
+This should work on Python 3.7 and above. It was tested with Python 3.7, 3.8, 3.9, 3.10, 3.11, 3.12.
 
 # Authors
 
