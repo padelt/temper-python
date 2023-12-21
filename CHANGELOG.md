@@ -10,7 +10,7 @@ No changes yet.
 
 ## [1.6.1] - 2023-12-19
 ### Added
-- Support for for TEMPer2V1.3
+- Support for TEMPer2V1.3
 - Support for TEMPerHumiV1.1
 - Support for TEMPerHumiV1.0
 - Experimental support for TEMPer2_V3.7
