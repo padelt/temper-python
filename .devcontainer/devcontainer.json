@@ -18,11 +18,16 @@
 	"postCreateCommand": "pip3 install --user -r requirements.txt -r requirements_test.txt",
 
 	// Priviledged mode is necessary to get access to usb
-	"runArgs": ["--privileged"]
+	"runArgs": ["--privileged"],
 	
 	// Configure tool-specific properties.
 	// "customizations": {},
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	//"remoteUser": "root"
+	
+	// Access local .pypi api keys
+	"mounts": [
+		"source=${localEnv:HOME}${localEnv:USERPROFILE}/.pypirc,target=/home/vscode/.pypirc,type=bind,consistency=cached"
+	]
 }
