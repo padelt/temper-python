@@ -67,6 +67,16 @@ from temperusb.temper import TIMEOUT
             None,
         ],
         [
+            "TEMPer2_M12_V1.3",
+            0x0C45,
+            0x7401,
+            2,
+            b"\x01\x80\x33\x01\x00\x00\x00\x00",
+            b"\x00\x00\x20\x1A\x2B\x33",  # 0x201A,0x2B33 converts to 32.1C, 43.2C (fm75)
+            [32.1, 43.2],
+            None,
+        ],
+        [
             "TEMPer1F_V1.3",  # Has 1 sensor at offset 4
             0x0C45,
             0x7401,
